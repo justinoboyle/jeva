@@ -7,29 +7,31 @@ The current runner batches nodes by dependency layer, giving each request `{inpu
 Use this template in `<checkout>/examples/support-triage.ts` and adapt its criteria to the user's taxonomy:
 
 ```ts
-import { defineProgram } from '../src/program.js';
+import { defineProgram } from "../src/program.js";
 
-export default defineProgram({ nodes: [
-  {
-    id: 'intent',
-    question: () => ({
-      type: 'choice',
-      instructions: 'Which category describes the main request in `input`?',
-      criteria: {
-        billing: 'Charges, invoices, payment errors, or requested refunds',
-        technical: 'Product failures, configuration, or account access',
-        other: 'No clear primary request in either category',
-      },
-    }),
-  },
-  {
-    id: 'refund_requested',
-    question: () => ({
-      type: 'boolean',
-      instructions: 'Does `input` explicitly request money back?',
-    }),
-  },
-] });
+export default defineProgram({
+  nodes: [
+    {
+      id: "intent",
+      question: () => ({
+        type: "choice",
+        instructions: "Which category describes the main request in `input`?",
+        criteria: {
+          billing: "Charges, invoices, payment errors, or requested refunds",
+          technical: "Product failures, configuration, or account access",
+          other: "No clear primary request in either category",
+        },
+      }),
+    },
+    {
+      id: "refund_requested",
+      question: () => ({
+        type: "boolean",
+        instructions: "Does `input` explicitly request money back?",
+      }),
+    },
+  ],
+});
 ```
 
 The examples configuration includes `examples/**/*.ts` and emits into the ignored `dist/templates` directory. From the checkout:

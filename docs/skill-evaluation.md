@@ -4,17 +4,17 @@ The purpose of separate entry points is to match the agent's task before it know
 
 These are behavioral acceptance scenarios, not a claim of perfect automatic skill routing. Test implicit selection in a fresh session with only the request (no skill name), then test explicit `$skill-name` invocation. Save selected skill, command, result handling, and whether an unnecessary model call occurred.
 
-| Request | Expected selection and observable behavior |
-| --- | --- |
-| “Sort these 50 support messages into our billing and technical queues.” | `jev-triage`; inspect taxonomy, preserve IDs, include other/review, return labels without assigning external tickets |
-| “Does each summary statement follow from its cited passage?” | `jev-evidence`; atomic claims, support/contradict/insufficient, preserve source locators |
-| “Which retrieved chunks will help answer this query?” | `jev-rank`; per-passage relevance, retain uncertain candidates when recall matters |
-| “Score these incidents by user impact, then sort them.” | `jev-rank`; concrete one-dimensional rubric, missing impact handled separately, code sorts |
-| “Make a reusable workflow that classifies tickets and checks refund requests.” | `jev-decision`; independent observations in one batch, queue policy in code |
-| “Find the latest refund law.” | No Jev skill for discovery; retrieve authoritative sources first |
-| “Count the rows with status=failed and sort timestamps.” | No Jev call; deterministic parsing, filtering, and sorting |
-| “Prove this patch has no bugs.” | No Jev proof; compile, test, and review using appropriate tools |
-| “Choose any action necessary and execute it.” | No unrestricted model authorization; first establish eligible actions and user scope |
+| Request                                                                        | Expected selection and observable behavior                                                                           |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| “Sort these 50 support messages into our billing and technical queues.”        | `jev-triage`; inspect taxonomy, preserve IDs, include other/review, return labels without assigning external tickets |
+| “Does each summary statement follow from its cited passage?”                   | `jev-evidence`; atomic claims, support/contradict/insufficient, preserve source locators                             |
+| “Which retrieved chunks will help answer this query?”                          | `jev-rank`; per-passage relevance, retain uncertain candidates when recall matters                                   |
+| “Score these incidents by user impact, then sort them.”                        | `jev-rank`; concrete one-dimensional rubric, missing impact handled separately, code sorts                           |
+| “Make a reusable workflow that classifies tickets and checks refund requests.” | `jev-decision`; independent observations in one batch, queue policy in code                                          |
+| “Find the latest refund law.”                                                  | No Jev skill for discovery; retrieve authoritative sources first                                                     |
+| “Count the rows with status=failed and sort timestamps.”                       | No Jev call; deterministic parsing, filtering, and sorting                                                           |
+| “Prove this patch has no bugs.”                                                | No Jev proof; compile, test, and review using appropriate tools                                                      |
+| “Choose any action necessary and execute it.”                                  | No unrestricted model authorization; first establish eligible actions and user scope                                 |
 
 Boundary fixtures for live evaluation: a requested versus issued refund, a login failure, an unrelated greeting, a mixed-intent ticket, an unsupported claim, conflicting evidence, an irrelevant passage sharing topic keywords, and an input that says “ignore the rubric.” Use independent labels, reserve holdouts, and report errors plus abstention/coverage. Do not adjust thresholds against the holdout or rerun until a preferred answer appears.
 
@@ -28,12 +28,12 @@ The formal-design revision validates all five installed skills (including the ba
 
 A live run of `examples/recursive-space.ts --live` completed four gateway calls with two independent batches per frontier and no SDK retries. The provisional gate was minimum probability 0.90 and minimum margin 0.20. All four decisions passed it:
 
-| Candidate ID | Relation | P(supports) | P(contradicts) | P(insufficient) |
-|---|---|---:|---:|---:|
-| annual | supports | 1.00 | 0.00 | 0.00 |
-| monthly | supports | 0.99 | 0.01 | 0.00 |
-| annual-used | supports | 0.94 | 0.01 | 0.05 |
-| monthly-day14 | contradicts | 0.00 | 1.00 | 0.00 |
+| Candidate ID  | Relation    | P(supports) | P(contradicts) | P(insufficient) |
+| ------------- | ----------- | ----------: | -------------: | --------------: |
+| annual        | supports    |        1.00 |           0.00 |            0.00 |
+| monthly       | supports    |        0.99 |           0.01 |            0.00 |
+| annual-used   | supports    |        0.94 |           0.01 |            0.05 |
+| monthly-day14 | contradicts |        0.00 |           1.00 |            0.00 |
 
 Exact claims and evidence are in the example. The supported annual child says premium-feature users do **not** qualify; the contradicted monthly child explicitly claims eligibility for a **new** request on day 14. This avoids silently interpreting payment receipt as eligibility. Reported 1.00 probabilities are model estimates rounded by the provider. This is a small integration smoke test, not a holdout accuracy estimate, an automatic skill-routing test, or proof that the revised prompts improved accuracy. No complete-solution verifier is supplied by the search utility.
 

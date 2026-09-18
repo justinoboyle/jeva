@@ -119,6 +119,8 @@ Configure a suitable budget on the gateway key. A project budget alone does not 
 
 ## Mission
 
+For async/await, result forwarding, bounded parallel tasks, and fan-in, see [async programs](docs/async-programs.md). Run `npm run demo:async` offline or `npm run jev:async` with the gateway.
+
 Read [how Jeva is built with Jev](docs/building-jeva-with-jev.md) for the actual development loop, live decision traces, invocation boundaries, and improvements made from observed failures. A runnable [development problem state](docs/development-problem.json) accompanies the account.
 
 Represent complex problems as executable, inspectable decision programs. Rather than leaving the structure of a task implicit in a conversation, encode its objective, state, requirements, alternatives, dependencies, and stopping conditions in typed TypeScript. Compile that representation, use Jev for semantic observations, and compose the results with deterministic code into an answer the user can interpret.
@@ -254,5 +256,7 @@ npm link
 ```sh
 npm test
 ```
+
+Run `npm run verify` for the full formatting, strict Oxlint, Effect diagnostics, TypeScript, tests, and example-compilation checks. Use `npm run format` to format the repository and `npm run hooks:install` to enable the same verification before commits. CI also runs the full suite; hooks are opt-in and do not replace CI.
 
 The tests exercise deterministic batching/routing, graph preflight, config precedence/privacy, and exit policies. They do not prove model correctness or sandbox execution. Program files are trusted JavaScript modules imported with Node privileges; compile TypeScript and inspect generated code before running it. See [the program recipe](skills/jev-decision/references/programs.md) for a short build-and-run workflow.

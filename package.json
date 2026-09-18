@@ -1,6 +1,6 @@
 {
   "name": "jeva",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Run TypeSafe Jev from the command line: structured decisions, JSON pipelines, and compiled async TypeScript workflows.",
   "keywords": [
     "jev",

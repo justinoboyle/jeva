@@ -49,11 +49,11 @@ If no Jev question fits, identify what is missing: evidence retrieval, candidate
 
 Represent current problem states, not just recurring examples: `npm run jev:decide -- --state problem.json` evaluates typed requirements and alternatives; `npm run jev:audit -- --state task.json` audits current work. Reuse the compiled controller but update its supplied state whenever the objective, evidence, or unresolved obligations change. See [the development account](../../docs/building-jeva-with-jev.md) for how this process has already changed Jeva itself.
 
-| Local primitive | Question | Answer field |
-|---|---|---|
-| Choice | One of explicit unordered labels | `choice`, `probabilities` |
-| Boolean | One crisp condition | `probability` for true |
-| Score | One explicitly described ordered dimension | `score`, optional `probabilities` |
+| Local primitive | Question                                   | Answer field                      |
+| --------------- | ------------------------------------------ | --------------------------------- |
+| Choice          | One of explicit unordered labels           | `choice`, `probabilities`         |
+| Boolean         | One crisp condition                        | `probability` for true            |
+| Score           | One explicitly described ordered dimension | `score`, optional `probabilities` |
 
 The local CLI calls the yes/no primitive Boolean; TypeSafe's direct SDK calls it Noul. Do not use SDK-only fields or Python examples as if they were the local TypeScript interface. A one-question `--json` response wraps answers under `.answers.answer`; `jeva run` returns an answer map and currently discards provider metadata. Skipped nodes are absent.
 

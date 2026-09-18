@@ -60,8 +60,8 @@ async function parse(argv: string[]): Promise<Options> {
       else options.input = v;
       continue;
     }
-    // eslint-disable-next-line no-await-in-loop -- File arguments apply in order so later input flags retain their precedence.
     if (arg === "-f" || arg === "--file") {
+      // eslint-disable-next-line no-await-in-loop -- File arguments apply in order so later input flags retain their precedence.
       options.input = await readFile(value(argv, i++, arg), "utf8");
       continue;
     }

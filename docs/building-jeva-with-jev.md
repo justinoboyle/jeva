@@ -51,7 +51,7 @@ flowchart TD
     R -->|New evidence or phase| S
 ```
 
-The audit asks whether a *useful semantic decision* remains unmodeled. It does not ask whether the agent has made enough calls to look busy. Its second question chooses among opportunities already represented in the state. A single opportunity can be selected deterministically after the audit; missing or uncertain results remain unresolved. The controller does not run the selected action automatically.
+The audit asks whether a _useful semantic decision_ remains unmodeled. It does not ask whether the agent has made enough calls to look busy. Its second question chooses among opportunities already represented in the state. A single opportunity can be selected deterministically after the audit; missing or uncertain results remain unresolved. The controller does not run the selected action automatically.
 
 The decision graph builds a question for each candidate/requirement pair and evaluates all independent pairs together. Code admits only candidates whose required observations pass the gate with the `supports` label. If one candidate remains, there is no reason to ask a second model question. If several remain, the next question receives only those eligible choices. If none remain, the result is review.
 
@@ -69,15 +69,31 @@ npm run jev:decide -- --state docs/development-problem.json
 
 In the recorded live run, the gate required winning probability at least 0.90 and winner/runner-up margin at least 0.20:
 
-| Candidate description | Explicit state | Feedback | Honest boundary | Code's outcome |
-|---|---|---|---|---|
-| Autonomous model authorship story | Contradicts 1.00 | Contradicts 0.93 | Review: contradicts 0.88 | Ineligible |
-| Compiled feedback loop | Supports 1.00 | Supports 1.00 | Supports 0.98 | Sole eligible candidate |
-| Typed static report without improvements | Supports 1.00 | Contradicts 1.00 | Supports 0.99 | Ineligible |
+| Candidate description                    | Explicit state   | Feedback         | Honest boundary          | Code's outcome          |
+| ---------------------------------------- | ---------------- | ---------------- | ------------------------ | ----------------------- |
+| Autonomous model authorship story        | Contradicts 1.00 | Contradicts 0.93 | Review: contradicts 0.88 | Ineligible              |
+| Compiled feedback loop                   | Supports 1.00    | Supports 1.00    | Supports 0.98            | Sole eligible candidate |
+| Typed static report without improvements | Supports 1.00    | Contradicts 1.00 | Supports 0.99            | Ineligible              |
 
 Nine observations ran in one request. The controller selected the sole eligible description without another model call. The agent then used that design for this writeup and the current-state workflow changes. The model judged supplied descriptions; it did not prove the code implements them. Reported probabilities, including 1.00, are rounded model estimates.
 
 An earlier live usage audit found a missed opportunity at 0.98 and selected `compiled_design` at 1.00. Acting on it produced a two-request chain: nine parallel requirement checks, then selection between two eligible architectures. A separate instruction-excerpt audit returned four probabilities below its 0.90 gate; those stayed in review. See [the evaluation record](skill-evaluation.md) for the observations and their limits.
+
+## Release loop: executed, blocked, and narrowed
+
+During the first npm release preparation, the agent represented the current work as a validated reasoning-state snapshot. The network attempt failed; approval review then blocked sending that private progress snapshot to the gateway. That audit has no semantic result and no probability. It did not select an opportunity or establish adequate coverage.
+
+A separate, approved evaluation sent only the generic authored descriptions in [release-problem.json](release-problem.json), not the blocked snapshot. Run it with:
+
+```sh
+npm run jev:decide -- --state docs/release-problem.json
+```
+
+The compiled graph evaluated two explanatory alternatives against three requirements: supplied-report scope, uncertainty, and cooperative cancellation. Six independent observations shared one request. The bounded explanation received `supports` at 1.00 for each requirement; the guarantee-based explanation received `contradicts` at 1.00 for each. All six passed the existing 0.90 probability / 0.20 margin gate. Code selected the sole eligible explanation without another call. These are rounded model observations on deliberately contrasting descriptions, not a whole-README audit or accuracy benchmark.
+
+The consuming action was to retain the README's unknown-weather fallback and probability caveat, link the async cancellation contract, and record the narrower scope here. The skill's reasoning-loop instructions now explicitly prevent a narrower substitute evaluation from marking a blocked current-state audit completed. Deterministic integration checks separately passed all 46 tests, strict Oxlint, formatting, TypeScript compilation, and Effect diagnostics over 24 of 24 source files. Three mission branches were integrated with explicit merge commits. Neither those tool results nor publication permission came from Jev.
+
+For reproducibility, keep the distinction between the input snapshot, attempted invocation, accepted narrower observation, consuming change, and independent verification. A blocked call is part of the record, not an excuse to invent an audit result.
 
 ## When Jev is used
 

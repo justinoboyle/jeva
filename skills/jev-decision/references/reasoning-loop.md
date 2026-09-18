@@ -33,6 +33,8 @@ The workflow compiles TypeScript, validates state, and runs the guarded `coverag
 
 Without `--state`, the example uses embedded demonstration state. `demo:audit` uses a synthetic evaluator. Neither establishes that the current task was audited. CLI output is an observation artifact, not evidence that the recommended work was executed. Perform that work and record its result before marking it completed.
 
+If transmitting the actual snapshot is blocked, preserve that audit as blocked with probabilities unavailable. Do not mark it completed after a narrower generic-description evaluation: that is a different observation with reduced scope. A subsequent approved evaluation may inform its own consuming change, but cannot retroactively supply the missing coverage result. Keep private task snapshots out of public package artifacts.
+
 ## A bounded controller around the graph
 
 Represent controller state as Sₜ = (objective, observations, unresolved, opportunities, revision, budget). Each cycle uses the following transitions:
