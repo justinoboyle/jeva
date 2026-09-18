@@ -43,6 +43,8 @@ When aggressive use is requested, put this loop into substantive work:
 
 Read [reasoning-loop.md](../jev-decision/references/reasoning-loop.md) for the current-state JSON schema, runnable audit, bounded controller, and update procedure. `examples/reasoning-loop.ts` implements one guarded coverage → next-opportunity cycle; the calling agent owns execution and state updates. `examples/compiled-problem.ts` implements parallel candidate/requirement checks → eligibility filtering → dependent selection. Use their structures for the actual task, not as a substitute for doing it.
 
+For executing repeated work, Jev-controlled exits, or proving use within a loop, read [loop-execution.md](../jev-decision/references/loop-execution.md). Compile the exit policy with the work, execute it, save a private receipt, and verify the artifact. Distinguish actual answer access from declared dependencies and causal use. A prose claim, fixture, or unsigned receipt cannot prove that a live model was consulted or that the user's goal is complete.
+
 If no Jev question fits, identify what is missing: evidence retrieval, candidate generation, decomposition, or deterministic execution. Do that work in the appropriate tool and reconsider when state changes. Arithmetic, Git state, permissions, and executable correctness checks do not become semantic model tasks. A usage audit cannot grant authorization or prove that the reasoning is correct.
 
 ## Local types and interfaces

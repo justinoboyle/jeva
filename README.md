@@ -141,6 +141,29 @@ See the [problem-compilation contract](skills/jev-decision/references/problem-co
 
 ## Run a compiled workflow
 
+### Bounded loops and inspectable execution
+
+Jev judgments can be first-class loop exit conditions. Declare which labels mean `complete`, `continue`, or `review`, set probability and margin thresholds, and bind the exit to a successful current-round call. Resource limits and cancellation are separate terminal outcomes, never successful completion.
+
+```sh
+npm run demo:loop
+npm run jev:loop -- --report loop-report.json
+jeva verify-loop loop-report.json --require-live --require-complete
+```
+
+The demo uses synthetic observations; the live version refines an authored explanation of uncertainty. Both execute the same compiled controller. The live command requires gateway credentials and sends only that example's authored context. Generated files are private and never overwritten.
+
+For your own trusted compiled programs:
+
+```sh
+jeva run program.js --input-json state.json --receipt run.json
+jeva verify run.json --require-live --min-calls 1
+jeva loop task-loop.js --report loop-report.json
+jeva exit --policy policy.json --answer answer.json
+```
+
+`jeva exit` replays a supplied Choice gate without calling the model: exit `0` completes, `4` continues, and `3` requests review. The loop controller additionally links that gate to an actual recorded evaluator result. An unsigned local report is evidence under a trusted recorder, not proof of provider identity, hidden reasoning, or semantic correctness. See [agent loops and exit conditions](docs/agent-loops.md), [the typed example](examples/loop-definition.ts), and [contributor/branching workflow](CONTRIBUTING.md).
+
 For contributors in a checkout with development dependencies installed, these short commands compile the examples before running them. They are repository npm scripts, not global `jeva` subcommands:
 
 | Workflow                             | Offline fixture       | Live Jev             |

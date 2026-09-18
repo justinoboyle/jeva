@@ -44,7 +44,7 @@ export async function evaluator(live: boolean, fixture: Evaluate): Promise<Evalu
   if (!live) return fixture;
   const config = await Effect.runPromise(loadConfig());
   process.env.AI_GATEWAY_API_KEY = config.apiKey;
-  return (request) => {
+  return async (request) => {
     const questions = Object.fromEntries(
       Object.entries(request.questions).map(([id, question]) => {
         if (question.type !== "choice") throw new Error("These examples require Choice questions");
@@ -60,7 +60,7 @@ export async function evaluator(live: boolean, fixture: Evaluate): Promise<Evalu
         ];
       }),
     );
-    return evaluate({
+    const result = await evaluate({
       model: config.model,
       questions,
       state: Schema.decodeUnknownSync(Schema.JsonObject)(request.state),
@@ -69,6 +69,7 @@ export async function evaluator(live: boolean, fixture: Evaluate): Promise<Evalu
         : AbortSignal.timeout(30_000),
       maxRetries: 0,
     });
+    return { answers: result.answers };
   };
 }
 

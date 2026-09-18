@@ -95,6 +95,23 @@ The consuming action was to retain the README's unknown-weather fallback and pro
 
 For reproducibility, keep the distinction between the input snapshot, attempted invocation, accepted narrower observation, consuming change, and independent verification. A blocked call is part of the record, not an excuse to invent an audit result.
 
+## Executed toolset development and loop exit
+
+The next product increment added [bounded agent loops](agent-loops.md), run receipts, and offline exit replay. Two live compiled design comparisons used [toolset-problem.json](toolset-problem.json) and [exit-policy-problem.json](exit-policy-problem.json): nine and six independent observations respectively, one gateway request each. The recorded-controller and explicit-exit-policy candidates received support at 1.00 for all required observations. Their alternatives were rejected by the unchanged gates. Those observations guided the explicit label mapping, linked call evidence, and separation of resource stops from successful completion; they did not prove the implementation.
+
+The agent then actually executed the new CLI loop over authored uncertainty explanations. Its first live attempt returned `invalid_response`: the SDK's transport envelope contained non-JSON metadata outside `answers`. That failed report was retained. The correction projects the actual answer contract before JSON validation; regression tests retain rejection of non-JSON answer contents. This was a measured integration failure and repair, not a prompt adjustment.
+
+The corrected live run had two dependent rounds:
+
+| Round | Supplied explanation                                     | Jev observation  | Controller action                                       |
+| ----- | -------------------------------------------------------- | ---------------- | ------------------------------------------------------- |
+| 1     | A confident unknown result means successful completion   | Contradicts 1.00 | Continue; replace with a supplied corrected explanation |
+| 2     | A high-confidence unknown remains review, not completion | Supports 1.00    | Complete through the declared exit policy               |
+
+Both used a 0.90 probability floor and 0.20 margin. The controller consumed its own recorded answer, not a caller-provided completion flag. This establishes exercised control flow on this authored task under the trusted runtime; it does not establish completion of unrelated development work or reveal hidden reasoning. The explanation alternatives came from the agent; Jev selected finite judgments rather than generating a rewrite.
+
+Parallel worktrees produced the receipt runtime, loop runtime, and documentation/package smoke tests. Independent integration review found missing verifier checks for final-state records, impossible round order, and false resource-limit claims; regression tests now cover those cases. This is why locally consistent hashes are not enough: the verifier also needs state-machine invariants, and unsigned records still cannot authenticate their author.
+
 ## When Jev is used
 
 Use Jev for the semantic parts of the actual problem: whether supplied evidence supports a claim, whether a described candidate covers a requirement, which known category a message fits, whether a useful semantic opportunity remains, or which already-eligible description best matches an objective. Model these observations in a typed program and retain their state paths and outputs.

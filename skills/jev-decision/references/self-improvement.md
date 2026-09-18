@@ -42,6 +42,9 @@ A live result reported as 100% remains a rounded model estimate. Do not make it 
 
 ## Lessons from developing the compiled loop
 
+- Validate the evaluator's declared answer envelope before hashing/copying JSON. A live SDK response may include non-JSON transport metadata outside `answers`; rejecting that metadata is not evidence that the model returned an invalid answer. Preserve the failed attempt, normalize only the intended contract, and test that invalid answer contents remain rejected.
+- Verify execution records against the controller's state machine, not only their digests. Regression cases must include fabricated budget stops, missing final-state records, continuation after a stall, and nonchronological call IDs. Self-consistent unsigned records still do not authenticate model use.
+
 Regression case: a private current-state audit is blocked, then generic explanation candidates are approved and evaluated. Expected (tool-trace oracle): the audit remains blocked with no probabilities; only the candidate judgments are live-evaluated. A successful narrower call must not be reported as completing the original audit.
 
 - Represent the actual current problem. A fixed demonstration is useful for integration, but cannot audit changed work. Use validated `--state` inputs for the audit and candidate/requirement program; preserve the input snapshot with the evaluation when appropriate.

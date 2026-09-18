@@ -10,7 +10,7 @@ import {
   selectOutput,
   type Options,
 } from "./core.js";
-import { runFile } from "./run.js";
+import { formalCommand, formalHelp } from "./formal-command.js";
 import { loadConfig } from "./config.js";
 import { decisionExitCode, validatePolicy } from "./policy.js";
 import { parseSetupOptions, setupHelp, setupKey } from "./setup.js";
@@ -42,6 +42,8 @@ async function parse(argv: string[]): Promise<Options> {
     if (arg === "-h" || arg === "--help") {
       stdout.write(
         help +
+          "\n" +
+          formalHelp +
           "\nSetup: jeva setup --scope <vercel-team> --budget <USD>\n\nExit policy (Choice/Boolean):\n  --min-probability <0..1> Minimum selected-answer probability\n  --expect <label>         Require a specific option or true/false\n  Exit: 0 pass, 1 error, 3 uncertain, 4 confident mismatch.\n  Gated results remain on stdout; without gates every valid answer exits 0.\n\nPrograms: jeva run <trusted-compiled-program.js> -i <input>\nConfig: environment > explicit DOTENV_CONFIG_PATH > .env.local > .env > ~/.config/jeva/.env\n",
       );
       process.exit(0);
@@ -120,15 +122,6 @@ async function parse(argv: string[]): Promise<Options> {
   return options;
 }
 
-async function runCommand(argv: string[]): Promise<void> {
-  const file = argv[1];
-  if (!file) throw new Error("Usage: jeva run <compiled-program.mjs> -i <input>");
-  const at = argv.findIndex((arg) => arg === "-i" || arg === "--input");
-  const input = at < 0 || argv[at + 1] === "-" ? await readStdin() : argv[at + 1];
-  if (!input) throw new Error("Provide program input with -i or stdin.");
-  stdout.write(`${JSON.stringify(await runFile(file, input))}\n`);
-}
-
 try {
   const argv = process.argv.slice(2);
   if (argv[0] === "setup") {
@@ -139,8 +132,14 @@ try {
         `Saved private config: ${result.file}\nBudget: $${result.budget}; refresh: ${result.refresh}\n`,
       );
     }
-  } else if (argv[0] === "run") await runCommand(argv);
-  else {
+  } else if (["run", "loop", "exit", "verify", "verify-loop"].includes(argv[0])) {
+    if (argv.includes("--help") || argv.includes("-h")) stdout.write(formalHelp);
+    else {
+      const result = await formalCommand(argv, readStdin);
+      stdout.write(`${JSON.stringify(result.output)}\n`);
+      process.exitCode = result.code;
+    }
+  } else {
     const options = await parse(argv);
     const config = await Effect.runPromise(loadConfig());
     process.env.AI_GATEWAY_API_KEY = config.apiKey;
