@@ -24,9 +24,11 @@
     "jev:audit": "node scripts/workflow.mjs audit --live",
     "jev:decide": "node scripts/workflow.mjs decide --live",
     "jev:search": "node scripts/workflow.mjs search --live",
+    "jev:async": "node scripts/workflow.mjs async --live",
     "demo:audit": "node scripts/workflow.mjs audit",
     "demo:decide": "node scripts/workflow.mjs decide",
-    "demo:search": "node scripts/workflow.mjs search"
+    "demo:search": "node scripts/workflow.mjs search",
+    "demo:async": "node scripts/workflow.mjs async"
   },
   "dependencies": {
     "ai": "^7.0.106",
