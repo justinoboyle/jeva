@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { assertEffectCoverage } from "./effect-report.mjs";
 
 const root = new URL("../", import.meta.url);
 /** @type {unknown} */
@@ -50,20 +51,6 @@ if (result.error) throw result.error;
 if (result.stderr) process.stderr.write(result.stderr);
 if (result.signal) throw new Error(`Effect lint interrupted by ${result.signal}.`);
 /** @type {unknown} */
-const report = JSON.parse(result.stdout);
-if (
-  typeof report !== "object" ||
-  report === null ||
-  !("summary" in report) ||
-  typeof report.summary !== "object" ||
-  report.summary === null ||
-  !("filesChecked" in report.summary) ||
-  !("totalFiles" in report.summary) ||
-  typeof report.summary.totalFiles !== "number" ||
-  report.summary.totalFiles < 1 ||
-  report.summary.filesChecked !== report.summary.totalFiles
-) {
-  throw new Error("Effect lint did not check every selected file.");
-}
+const report = assertEffectCoverage(JSON.parse(result.stdout));
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 process.exitCode = result.status ?? 1;

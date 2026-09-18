@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
+/** @type {Record<string, string>} */
 const commands = {
   audit: "reasoning-loop",
   decide: "compiled-problem",
