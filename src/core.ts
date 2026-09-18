@@ -12,6 +12,8 @@ export type Options = {
   percentage: boolean;
   confidence: boolean;
   verbose: boolean;
+  minProbability?: number;
+  expect?: string;
 };
 
 export const defaultOptions = (): Options => ({
