@@ -1,0 +1,27 @@
+{
+  "objective": "Define a first-class semantic loop exit policy that preserves uncertainty and distinguishes a successful exit from a resource stop.",
+  "requirements": [
+    {
+      "id": "unknown",
+      "statement": "An accepted high-confidence unknown or insufficient result remains review, never successful completion."
+    },
+    {
+      "id": "completion",
+      "statement": "Successful completion requires a specifically declared completion label, validated distribution, explicit probability and margin thresholds, and a successfully consumed current-round observation."
+    },
+    {
+      "id": "resource-stop",
+      "statement": "Budget, deadline, cancellation, and stalled-state stops remain distinct from satisfying the semantic objective."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "explicit-exit-policy",
+      "description": "Map declared finite labels explicitly to complete, continue, or review; map unknown and insufficient to review. Validate the distribution and apply probability and margin thresholds. Permit successful completion only for a declared completion label from a successful consumed current-round observation. Record round or call budgets, timeout, cancellation, and stalled-state termination separately from completion."
+    },
+    {
+      "id": "confidence-only",
+      "description": "Stop successfully whenever any label has high confidence, including unknown. Treat budget exhaustion and cancellation as successful completion. Do not link exit to a consumed current-round observation."
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "objective": "Choose a toolset design for executing typed semantic programs and checking whether a bounded agent workflow actually consumed their results.",
+  "requirements": [
+    {
+      "id": "execution",
+      "statement": "Record actual evaluator requests and outcomes, distinguish fixtures from live adapters, and link downstream consumption to a specific completed run."
+    },
+    {
+      "id": "bounded",
+      "statement": "Execute async dependent rounds with explicit round and call limits, cancellation, and no successful completion when required evidence is missing."
+    },
+    {
+      "id": "proof-boundary",
+      "statement": "Verify record consistency and declared result consumption without claiming unsigned local logs prove provider authenticity, hidden reasoning, or semantic correctness."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "self-report",
+      "description": "Have the agent write a sentence saying it used formal programs. Do not record evaluator calls or connect observations to output. Let it continue for as long as it chooses. Treat its sentence as proof of reasoning and correctness."
+    },
+    {
+      "id": "recorded-controller",
+      "description": "Wrap actual program execution to record evaluator requests and outcomes, distinguish fixtures from live adapters, and connect downstream consumption to a specific completed run. Execute async rounds with explicit round and call limits and cancellation; reject completion when required evidence is missing. Verify local record consistency and declared consumption. State that unsigned local logs cannot establish provider authenticity, hidden reasoning, or semantic correctness."
+    },
+    {
+      "id": "hash-only",
+      "description": "Compute a hash of the agent's claimed final answer without recording evaluator calls or bounding rounds. Claim that a valid hash proves the agent used Jev and that the answer is correct."
+    }
+  ]
+}

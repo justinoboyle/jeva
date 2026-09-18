@@ -1,13 +1,10 @@
-import { experimental_evaluate as evaluate } from "ai";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { runProgram, type DecisionNode } from "./program.js";
-import { Effect, Predicate, Schema } from "effect";
-import { loadConfig } from "./config.js";
+import { Predicate, Schema } from "effect";
+import { gatewayEvaluator } from "./gateway.js";
 
-export async function runFile(file: string, input: unknown) {
-  const config = await Effect.runPromise(loadConfig());
-  process.env.AI_GATEWAY_API_KEY = config.apiKey;
+export async function loadProgram(file: string) {
   const module: unknown = await import(pathToFileURL(resolve(file)).href);
   const baseFields = {
     id: Schema.String,
@@ -50,28 +47,9 @@ export async function runFile(file: string, input: unknown) {
       }),
     }),
   )(module);
-  const Questions = Schema.Record(
-    Schema.String,
-    Schema.Union([
-      Schema.Struct({
-        type: Schema.Literal("choice"),
-        instructions: Schema.String,
-        criteria: Schema.Record(Schema.String, Schema.String),
-      }),
-      Schema.Struct({
-        type: Schema.Literal("score"),
-        instructions: Schema.String,
-        criteria: Schema.Array(Schema.String),
-      }),
-      Schema.Struct({ type: Schema.Literal("boolean"), instructions: Schema.String }),
-    ]),
-  );
-  return runProgram(program, input, async (request) =>
-    evaluate({
-      model: config.model,
-      state: Schema.decodeUnknownSync(Schema.JsonObject)(request.state),
-      questions: Schema.decodeUnknownSync(Questions)(request.questions),
-      abortSignal: request.signal,
-    }),
-  );
+  return program;
+}
+
+export async function runFile(file: string, input: unknown) {
+  return runProgram(await loadProgram(file), input, gatewayEvaluator());
 }
