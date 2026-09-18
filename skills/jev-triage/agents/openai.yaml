@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jev Triage"
+  short_description: "Route messages into known queues with review"
+  default_prompt: "Use $jev-triage to classify these messages into known queues and flag ambiguous results."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jev Relevance and Rubrics"
+  short_description: "Filter context and score explicit semantic rubrics"
+  default_prompt: "Use $jev-rank to assess these inputs against a clear rubric and rank them in code."
+policy:
+  allow_implicit_invocation: true

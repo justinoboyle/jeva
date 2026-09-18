@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jev Evidence Checks"
+  short_description: "Check atomic claims against supplied evidence"
+  default_prompt: "Use $jev-evidence to check whether the supplied passages support each claim."
+policy:
+  allow_implicit_invocation: true

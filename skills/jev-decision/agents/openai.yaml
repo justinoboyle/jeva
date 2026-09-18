@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jev Decision Programs"
+  short_description: "Compose and tune batched semantic decisions"
+  default_prompt: "Use $jev-decision to turn this workflow into atomic Jev questions and a deterministic decision policy."
+policy:
+  allow_implicit_invocation: true
