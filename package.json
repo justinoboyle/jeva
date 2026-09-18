@@ -13,7 +13,14 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "test": "npm run build && node --test dist",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "build:examples": "tsc -p tsconfig.examples.json",
+    "jev:audit": "node scripts/workflow.mjs audit --live",
+    "jev:decide": "node scripts/workflow.mjs decide --live",
+    "jev:search": "node scripts/workflow.mjs search --live",
+    "demo:audit": "node scripts/workflow.mjs audit",
+    "demo:decide": "node scripts/workflow.mjs decide",
+    "demo:search": "node scripts/workflow.mjs search"
   },
   "dependencies": {
     "ai": "^7.0.106",
