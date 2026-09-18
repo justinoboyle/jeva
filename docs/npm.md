@@ -8,6 +8,15 @@ npx jeva -o yellow -o blue -i banana
 
 The command above requires the runtime and credentials below. Examples are runnable recipes, not recorded live outputs; measured development observations are identified separately in the [evaluation record](skill-evaluation.md).
 
+Compose it with commands you already use:
+
+```sh
+curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o jacket -o no-jacket
+curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o umbrella -o no-umbrella
+```
+
+These simple choices demonstrate piping, not a reliable forecast. A short report may omit precipitation; add explicit criteria and an `unknown` label when evidence is incomplete, as in the [README weather example](../README.md). Enable `pipefail` in automation to preserve a failed upstream command's exit status.
+
 ## Installation
 
 Use Node.js 22 or newer:
@@ -34,13 +43,13 @@ No API key is required for help. Model evaluations require your own gateway cred
 
 ## Configuration and errors
 
-If you are authenticated with the Vercel CLI, create a dedicated gateway key with an explicit team and budget:
+With an installed, authenticated Vercel CLI, create a dedicated gateway key with an explicit team and positive budget in USD:
 
 ```sh
 jeva setup --scope your-team --budget 10
 ```
 
-The budget is required; setup has no default amount. The created key has a non-resetting limit and is stored in the private global dotenv file. Setup is an account mutation, while `jeva --help` is local. You can skip setup when you already have a gateway key.
+The budget is required; setup has no default amount. The created key has a non-resetting limit and is stored in the private global dotenv file. Setup never prints the key or replaces an existing config. Setup is an account mutation, while `jeva --help` and `jeva setup --help` are local. You can skip setup when you already have a gateway key.
 
 Read `AI_GATEWAY_API_KEY` from your existing secret manager/environment, or create a private dotenv file using an editor:
 
@@ -94,11 +103,11 @@ Check whether impact is stated before interpreting a score; missing evidence is 
 
 Single-question `--json` emits the provider result with the answer at `.answers.answer`. The relevant fields are:
 
-| Primitive | Answer fields | Meaning |
-| --- | --- | --- |
-| Choice | `choice`, optional `probabilities` | Declared label and distribution |
-| Boolean | `probability` | Estimated P(true) |
-| Score | `score`, optional `probabilities` | Position on an ordered rubric and level distribution |
+| Primitive | Answer fields                      | Meaning                                              |
+| --------- | ---------------------------------- | ---------------------------------------------------- |
+| Choice    | `choice`, optional `probabilities` | Declared label and distribution                      |
+| Boolean   | `probability`                      | Estimated P(true)                                    |
+| Score     | `score`, optional `probabilities`  | Position on an ordered rubric and level distribution |
 
 Use one output mode per command: `--json`, `--probabilities`, `--percentage`, or `--confidence`. Missing metadata is not proof of zero uncertainty. Score percentages describe normalized rubric position, not accuracy. Provider confidence and selected-label probability are different quantities.
 
@@ -110,12 +119,12 @@ jeva -f message.txt --boolean --json \
   --min-probability 0.9 --expect true
 ```
 
-| Exit | Meaning |
-| --- | --- |
-| `0` | Gate passed, or a valid ungated result |
-| `1` | Input, configuration, provider, or invalid-answer error |
-| `3` | Tie or confidence below the chosen threshold |
-| `4` | A sufficiently certain answer differs from `--expect` |
+| Exit | Meaning                                                 |
+| ---- | ------------------------------------------------------- |
+| `0`  | Gate passed, or a valid ungated result                  |
+| `1`  | Input, configuration, provider, or invalid-answer error |
+| `3`  | Tie or confidence below the chosen threshold            |
+| `4`  | A sufficiently certain answer differs from `--expect`   |
 
 Valid results remain on stdout for exits `3` and `4`. Capture status as well as JSON. Without `--expect`, a confident false Boolean passes the floor; without a floor, `--expect` only requires a non-tied winning answer. Score exit gates are unsupported. Thresholds are policy choices, not guarantees of semantic accuracy.
 

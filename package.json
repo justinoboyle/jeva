@@ -1,15 +1,56 @@
 {
   "name": "jeva",
   "version": "0.1.0",
-  "description": "Fast, composable structured decisions with Jev through Vercel AI Gateway.",
+  "description": "Run TypeSafe Jev from the command line: structured decisions, JSON pipelines, and compiled async TypeScript workflows.",
+  "keywords": [
+    "jev",
+    "typesafe",
+    "cli",
+    "command-line",
+    "structured-output",
+    "typescript",
+    "effect",
+    "ai-gateway"
+  ],
+  "homepage": "https://www.npmjs.com/package/jeva",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinoboyle/jeva.git"
+  },
   "type": "module",
   "bin": {
     "jeva": "dist/cli.js"
   },
+  "exports": {
+    "./program": {
+      "types": "./dist/program.d.ts",
+      "import": "./dist/program.js"
+    },
+    "./search": {
+      "types": "./dist/search.d.ts",
+      "import": "./dist/search.js"
+    }
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts",
+    "!dist/*.test.js",
+    "!dist/*.test.d.ts",
+    "skills/",
+    "docs/",
+    "examples/",
+    "src/*.ts",
+    "!src/*.test.ts",
+    "scripts/workflow.mjs",
+    "tsconfig.json",
+    "tsconfig.examples.json"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run verify",
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
     "test": "npm run build && node --test dist scripts/quality.test.mjs",
