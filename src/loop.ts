@@ -391,7 +391,9 @@ export async function runLoop<S>(
           check();
           let answers: Record<string, Answer>;
           try {
-            const decoded = Schema.decodeUnknownSync(Response)(copyJson(response));
+            // SDK transport metadata is outside the answer contract and may not be JSON.
+            const envelope = Schema.decodeUnknownSync(Response)(response);
+            const decoded = Schema.decodeUnknownSync(Response)(copyJson(envelope));
             if (
               Object.keys(decoded.answers).length !== Object.keys(request.questions).length ||
               !Object.keys(request.questions).every((id) => Object.hasOwn(decoded.answers, id))
