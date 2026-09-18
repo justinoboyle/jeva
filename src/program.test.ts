@@ -365,8 +365,8 @@ test("invalid scheduling options and malformed nodes fail before callbacks", asy
     ),
   );
   assert.equal(calls, 0);
-  // @ts-expect-error Exercise the runtime boundary with an invalid node that the typed API also rejects.
   assert.throws(
+    // @ts-expect-error Exercise the runtime boundary with an invalid node that the typed API also rejects.
     () => plan({ nodes: [{ id: "both", run: () => ({}), question: () => boolean }] }),
     ProgramError,
   );
