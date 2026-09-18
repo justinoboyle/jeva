@@ -21,6 +21,8 @@ For explicitly requested aggressive use, keep a small decision ledger for substa
 
 Proactively audit coverage at substantive phase boundaries using [reasoning-loop.md](references/reasoning-loop.md): supply current typed state, ask whether a useful semantic opportunity remains, and gate a dependent selection among finite next workflows. Run `npm run jev:audit -- --state task.json`, then perform the selected authorized work and update state from its observed result. Bound audit rounds and calls. The default embedded demonstration and offline evaluator do not audit current work; a coverage label does not prove completeness.
 
+For a repeated executable task, first-class Jev exit conditions, or evidence of actual consumption, read [loop-execution.md](references/loop-execution.md). Use the implemented loop and receipt APIs, validate and gate the semantic exit Choice, and verify the actual saved receipt. Preserve budget/failure exits separately from completion, keep receipts private, and distinguish recorded access from causal influence or authenticity.
+
 1. Name the outputs and the code branches they control. Write the fallback as well as the happy path.
 2. Separate semantic observations from policy. For example, ask whether a customer requests a refund and whether a refund was already issued as two independent observations; compute the queue in code.
 3. Pick Choice for one of named alternatives, Boolean for a crisp proposition, Score for one ordered dimension. A Boolean probability near 0.5 means uncertainty, not medium severity.
