@@ -15,7 +15,7 @@
   "ignorePatterns": ["node_modules/**", "dist/**", "coverage/**", ".agents/**"],
   "overrides": [
     {
-      "files": ["**/*.test.ts"],
+      "files": ["**/*.test.ts", "**/*.test.mjs"],
       "rules": {
         "typescript/no-floating-promises": [
           "error",
