@@ -1,0 +1,27 @@
+{
+  "objective": "Choose an accurate explanatory summary of weather pipelines and async decision programs for first-time users.",
+  "requirements": [
+    {
+      "id": "evidence-scope",
+      "statement": "Explicitly distinguish a judgment of the supplied weather report from a forecast or guarantee about future weather."
+    },
+    {
+      "id": "uncertainty",
+      "statement": "Explain that model probabilities are not correctness proofs and that missing evidence can require an unknown or review outcome."
+    },
+    {
+      "id": "cancellation",
+      "statement": "Explain that cancellation stops admitting subsequent scheduled work but cannot forcibly stop already-started code that ignores cancellation."
+    }
+  ],
+  "candidates": [
+    {
+      "id": "bounded-explanation",
+      "description": "A weather pipeline judges the supplied report, not future weather. When the report leaves precipitation unanswered, include unknown or review. Model probabilities are not correctness proofs. Async programs run independent work with bounded concurrency and join prior results. Cancellation stops admitting subsequent scheduled work but cannot forcibly stop already-started code that ignores the signal."
+    },
+    {
+      "id": "guaranteed-explanation",
+      "description": "The weather pipeline guarantees what the user will need outdoors later. Model probabilities prove correctness, and no unknown or review outcome is needed. Cancelling a program forcibly stops every callback, even code that ignores cancellation."
+    }
+  ]
+}

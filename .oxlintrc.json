@@ -1,0 +1,50 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "import", "oxc", "unicorn", "node"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "env": {
+    "node": true
+  },
+  "ignorePatterns": ["node_modules/**", "dist/**", "coverage/**", ".agents/**"],
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.mjs"],
+      "rules": {
+        "typescript/no-floating-promises": [
+          "error",
+          { "allowForKnownSafeCalls": [{ "from": "package", "name": "test", "package": "node" }] }
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "eslint/eqeqeq": "error",
+    "eslint/no-var": "error",
+    "eslint/prefer-const": "error",
+    "eslint/no-throw-literal": "error",
+    "eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "import/no-duplicates": "error",
+    "import/no-self-import": "error",
+    "typescript/consistent-type-imports": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-argument": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/await-thenable": "error",
+    "typescript/only-throw-error": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "unicorn/no-abusive-eslint-disable": "error"
+  }
+}

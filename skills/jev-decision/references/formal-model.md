@@ -22,12 +22,12 @@ Represent a claim by its subject, predicate, quantifier, conditions, event, and 
 
 Define support and refutation witnesses a = [E ⊢ₛ c] and b = [E ⊢ₛ ¬c]:
 
-| a | b | Evidence state | Three-label projection |
-|---|---|---|---|
-| 1 | 0 | Support only | supports |
-| 0 | 1 | Refutation only | contradicts |
-| 0 | 0 | Neither; missing or ambiguous | insufficient |
-| 1 | 1 | Both; conflicting source | insufficient, with conflict noted |
+| a   | b   | Evidence state                | Three-label projection            |
+| --- | --- | ----------------------------- | --------------------------------- |
+| 1   | 0   | Support only                  | supports                          |
+| 0   | 1   | Refutation only               | contradicts                       |
+| 0   | 0   | Neither; missing or ambiguous | insufficient                      |
+| 1   | 1   | Both; conflicting source      | insufficient, with conflict noted |
 
 Witnesses are source passages or verified artifacts; they are not the model probabilities themselves. Where distinguishing conflict from absence matters, declare four labels or ask two separate atomic witness questions. Retain that distinction in the report. A high-confidence `insufficient` and a low-confidence distribution require different explanations.
 

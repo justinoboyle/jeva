@@ -1,4 +1,3 @@
-
 # Writing and improving Jev programs
 
 Jev is a judgment model. It reads one `state`, answers every question in the request independently and in parallel, and returns a probability distribution over the answers you defined. It does not reason in steps and it does not generate text. Code owns the control flow, the arithmetic, and the policy. Jev owns the snap judgments.
@@ -25,11 +24,11 @@ When the user requests aggressive Jev use, start substantive semantic decisions 
 
 ## Choose the primitive
 
-| Primitive | Use it when | Returns | Code acts on it with |
-| --- | --- | --- | --- |
-| Choice | The answer is one of a known set with no order | `choice`, `probabilities`, `confidence` | a branch per option |
-| Score | The answer is a position on a spectrum you can describe in steps | `score`, `probabilities`, `confidence`, `legend` | a threshold, a rank, or a weight |
-| Noul | The answer is a clean yes or no and the probability is the signal | `noul`, from 0 to 1 | an `if` on a threshold |
+| Primitive | Use it when                                                       | Returns                                          | Code acts on it with             |
+| --------- | ----------------------------------------------------------------- | ------------------------------------------------ | -------------------------------- |
+| Choice    | The answer is one of a known set with no order                    | `choice`, `probabilities`, `confidence`          | a branch per option              |
+| Score     | The answer is a position on a spectrum you can describe in steps  | `score`, `probabilities`, `confidence`, `legend` | a threshold, a rank, or a weight |
+| Noul      | The answer is a clean yes or no and the probability is the signal | `noul`, from 0 to 1                              | an `if` on a threshold           |
 
 - Add an `other` or `none of the above` option to a Choice whose list may not cover every input.
 - A Noul of 0.5 means Jev is unsure. It does not mean "medium". Use a Score to measure a degree.
@@ -168,21 +167,21 @@ elif category.choice == "billing" and response.answers["refund_requested"].noul 
 
 Find the question that fails before changing anything. Collect labeled examples, run them, and compare each question's answers and probabilities against the labels.
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| Wrong answers with high confidence | Jev read the instruction literally | State the exact condition. Put the boundary case in the criteria. |
-| Low confidence on a Choice | Options overlap, or no option fits | Add `what`, `not_for`, and `examples`. Add an `other` option. |
-| Low confidence on a Score | Levels overlap, the question measures two things, or the state says too little | Rewrite levels as distinct situations. Split the question. Add the missing field to the state. |
-| Scores cluster in the middle | Levels are degrees or numbers | Describe a concrete situation per level. Remove numerals. |
-| Top-of-scale cases look alike | The extreme case has no level | Add a level for the extreme. |
-| A Noul hovers near 0.5 | The condition is vague | Define the condition. Add `true` and `false` criteria with examples. |
-| Accuracy falls as inputs grow | The state carries irrelevant detail | Filter in code. Send only the needed fields. |
-| Errors on counts, sums, dates, or numeric nearness | Jev is doing arithmetic | Move the arithmetic to code. Ask Jev only for extraction or per-item judgments. |
-| Errors on nested or negated questions | Too much indirection | Ask the direct question. Name the state path. Split into two literal questions and combine in code. |
-| The answer follows text inside the state | The content steers the model | Tighten the criteria. Test adversarial cases. Gate the action on confidence. |
-| Rewording one question trades one error for another | One question weighs several properties | Split it into atomic questions and combine them in code. |
-| The final decision is wrong while each answer is right | The policy is wrong | Change the weights or thresholds in code. Leave the questions alone. |
-| The program is slow or costly | Questions are spread over sequential calls | Merge them into one request. Keep a second request only when it truly depends on the first answer. |
+| Symptom                                                | Likely cause                                                                   | Fix                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Wrong answers with high confidence                     | Jev read the instruction literally                                             | State the exact condition. Put the boundary case in the criteria.                                   |
+| Low confidence on a Choice                             | Options overlap, or no option fits                                             | Add `what`, `not_for`, and `examples`. Add an `other` option.                                       |
+| Low confidence on a Score                              | Levels overlap, the question measures two things, or the state says too little | Rewrite levels as distinct situations. Split the question. Add the missing field to the state.      |
+| Scores cluster in the middle                           | Levels are degrees or numbers                                                  | Describe a concrete situation per level. Remove numerals.                                           |
+| Top-of-scale cases look alike                          | The extreme case has no level                                                  | Add a level for the extreme.                                                                        |
+| A Noul hovers near 0.5                                 | The condition is vague                                                         | Define the condition. Add `true` and `false` criteria with examples.                                |
+| Accuracy falls as inputs grow                          | The state carries irrelevant detail                                            | Filter in code. Send only the needed fields.                                                        |
+| Errors on counts, sums, dates, or numeric nearness     | Jev is doing arithmetic                                                        | Move the arithmetic to code. Ask Jev only for extraction or per-item judgments.                     |
+| Errors on nested or negated questions                  | Too much indirection                                                           | Ask the direct question. Name the state path. Split into two literal questions and combine in code. |
+| The answer follows text inside the state               | The content steers the model                                                   | Tighten the criteria. Test adversarial cases. Gate the action on confidence.                        |
+| Rewording one question trades one error for another    | One question weighs several properties                                         | Split it into atomic questions and combine them in code.                                            |
+| The final decision is wrong while each answer is right | The policy is wrong                                                            | Change the weights or thresholds in code. Leave the questions alone.                                |
+| The program is slow or costly                          | Questions are spread over sequential calls                                     | Merge them into one request. Keep a second request only when it truly depends on the first answer.  |
 
 Rules for revising:
 

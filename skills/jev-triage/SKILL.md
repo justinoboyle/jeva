@@ -23,7 +23,7 @@ jeva -f ticket.txt --json \
 
 Pipe the result through the Choice gate described in the invocation reference. Report the selected queue, its probability, and whether policy accepted it or requested review. `other` remains unassigned even when confident. Route IDs through a fixed `case`/lookup table, never shell `eval`.
 
-For tool failures, classify the *reported condition* into known categories, then let code decide retry versus stop. Jev cannot establish a root cause from a symptom or prove that another attempt will succeed. For several observations of the same ticket, use the program reference in `jev-decision` to batch them; only load it when needed.
+For tool failures, classify the _reported condition_ into known categories, then let code decide retry versus stop. Jev cannot establish a root cause from a symptom or prove that another attempt will succeed. For several observations of the same ticket, use the program reference in `jev-decision` to batch them; only load it when needed.
 
 Before applying across a dataset, try a charge dispute, a login failure, a mixed request, and a message merely quoting someone else's complaint. Report abstentions as well as errors. Keep labeling separate from external assignments or messages unless the user requested those actions.
 

@@ -1,26 +1,77 @@
 {
   "name": "jeva",
-  "version": "0.1.0",
-  "description": "Fast, composable structured decisions with Jev through Vercel AI Gateway.",
+  "version": "0.0.1",
+  "description": "Run TypeSafe Jev from the command line: structured decisions, JSON pipelines, and compiled async TypeScript workflows.",
+  "keywords": [
+    "jev",
+    "typesafe",
+    "cli",
+    "command-line",
+    "structured-output",
+    "typescript",
+    "effect",
+    "ai-gateway"
+  ],
+  "homepage": "https://www.npmjs.com/package/jeva",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justinoboyle/jeva.git"
+  },
   "type": "module",
   "bin": {
     "jeva": "dist/cli.js"
   },
+  "exports": {
+    "./program": {
+      "types": "./dist/program.d.ts",
+      "import": "./dist/program.js"
+    },
+    "./search": {
+      "types": "./dist/search.d.ts",
+      "import": "./dist/search.js"
+    }
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts",
+    "!dist/*.test.js",
+    "!dist/*.test.d.ts",
+    "skills/",
+    "docs/",
+    "examples/",
+    "src/*.ts",
+    "!src/*.test.ts",
+    "scripts/workflow.mjs",
+    "tsconfig.json",
+    "tsconfig.examples.json"
+  ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run verify",
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
-    "test": "npm run build && node --test dist",
-    "check": "tsc --noEmit",
+    "test": "npm run build && node --test dist scripts/quality.test.mjs",
+    "check": "tsc --noEmit && tsc -p scripts/tsconfig.json",
+    "lint": "oxlint --deny-warnings --report-unused-disable-directives",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:effect": "node scripts/check-effect.mjs",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "hooks:install": "node scripts/install-hooks.mjs",
+    "precommit": "npm run verify",
+    "verify": "npm run format:check && npm run lint && npm run lint:effect && npm run check && npm test && npm run build:examples",
     "build:examples": "tsc -p tsconfig.examples.json",
     "jev:audit": "node scripts/workflow.mjs audit --live",
     "jev:decide": "node scripts/workflow.mjs decide --live",
     "jev:search": "node scripts/workflow.mjs search --live",
+    "jev:async": "node scripts/workflow.mjs async --live",
     "demo:audit": "node scripts/workflow.mjs audit",
     "demo:decide": "node scripts/workflow.mjs decide",
-    "demo:search": "node scripts/workflow.mjs search"
+    "demo:search": "node scripts/workflow.mjs search",
+    "demo:async": "node scripts/workflow.mjs async"
   },
   "dependencies": {
     "ai": "^7.0.106",
@@ -29,7 +80,11 @@
     "tsx": "^4.23.13"
   },
   "devDependencies": {
+    "@effect/language-service": "0.87.2",
     "@types/node": "^22.20.3",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.83.0",
+    "oxlint-tsgolint": "7.0.2002",
     "typescript": "^5.9.3"
   }
 }

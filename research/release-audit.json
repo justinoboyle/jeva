@@ -1,0 +1,20 @@
+{
+  "objective": "Release a useful command-line decision tool with honest simple-first examples and typed async workflows.",
+  "requestedMethod": "Use compiled typed state and bounded semantic judgments; use executable checks for code and package correctness.",
+  "completed": [
+    "Merged separate async, quality, and release documentation branches.",
+    "Checked documented command syntax against implementation.",
+    "Inspected package allowlist for unintended private files.",
+    "Ran live generic fruit and async evidence examples successfully."
+  ],
+  "unresolved": [
+    "Do the authored weather, confidence, and async descriptions distinguish illustrative usage from guaranteed outcomes?",
+    "Full integrated verification, packed-install checks, and registry publication remain deterministic work."
+  ],
+  "opportunities": [
+    {
+      "id": "explanation-boundaries",
+      "description": "Judge supplied release explanation alternatives against explicit requirements for evidence scope, uncertainty, and cancellation limits; gate each requirement independently."
+    }
+  ]
+}

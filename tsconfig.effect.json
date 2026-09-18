@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.examples.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true,
+        "diagnosticsName": true,
+        "diagnosticSeverity": {
+          "floatingEffect": "error",
+          "missingEffectContext": "error",
+          "missingEffectError": "error",
+          "missingLayerContext": "error",
+          "missingReturnYieldStar": "error",
+          "missingStarInYieldEffectGen": "error",
+          "effectInFailure": "error",
+          "effectInVoidSuccess": "error",
+          "outdatedApi": "error"
+        }
+      }
+    ]
+  },
+  "include": ["src/**/*.ts", "examples/**/*.ts"]
+}

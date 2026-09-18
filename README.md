@@ -1,8 +1,127 @@
-# jeva
+# jeva — run TypeSafe Jev from the command line
+
+```sh
+npx jeva -o yellow -o blue -i banana
+```
 
 `jeva` is a small, pipeline-safe CLI for TypeSafe’s Jev decision model through Vercel AI Gateway. It returns declared structured decisions—never generated prose—so shell scripts and TypeScript own control flow.
 
+Use this TypeSafe Jev CLI for classification, evidence checks, Boolean judgments, rubric scores, and compiled decision workflows. Inputs come from an argument, a file, or stdin; outputs can be plain values or JSON with model probabilities.
+
+Pipe another command's output directly into a decision:
+
+```sh
+curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o jacket -o no-jacket
+curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o umbrella -o no-umbrella
+```
+
+Weather and model results vary. Two labels force a choice even when the weather snippet lacks useful details. When missing evidence matters, name the rule and allow an unknown result:
+
+```sh
+curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva --json \
+  -q 'Does `input` explicitly report rain or explicitly report dry conditions?' \
+  -o umbrella -c 'umbrella=Rain is explicitly reported' \
+  -o no-umbrella -c 'no-umbrella=Dry conditions are explicitly reported' \
+  -o unknown -c 'unknown=Neither is established or the report conflicts'
+```
+
+This judges the supplied report, not future weather; temperature or wind alone does not establish precipitation. For scripts, enable your shell's `pipefail` so an upstream fetch failure is not hidden by a later command.
+
+## Install and make a decision
+
+Requires Node.js 22 or newer and a Vercel AI Gateway API key for model calls. With credentials configured, the first command asks Jev to choose between `yellow` and `blue`. Examples below are recipes; recorded live observations are labeled in the [evaluation record](docs/skill-evaluation.md).
+
+```sh
+npm install -g jeva
+jeva --help
+```
+
+Or inspect the command without a global install:
+
+```sh
+npx -y jeva --help
+```
+
+Help does not need credentials. Provide `AI_GATEWAY_API_KEY` through your environment or private configuration, then run:
+
+```sh
+jeva -o billing -o technical -o other -i 'I was charged twice' --json
+```
+
+Or create a dedicated gateway key using an installed, authenticated Vercel CLI. Choose the team and a positive budget in USD explicitly; setup has no default budget:
+
+```sh
+jeva setup --scope your-team --budget 10
+```
+
+Setup creates a key with the requested non-resetting budget and stores it in your private global configuration. It never prints the key or replaces an existing config. It is optional when you already supply `AI_GATEWAY_API_KEY`.
+
+Single-question JSON contains the decision at `.answers.answer`. Choice results include `choice` and, when available, `probabilities`. Model calls send the supplied input to the configured gateway and consume its usage budget. The package is a community CLI, not an official TypeSafe or Vercel release.
+
+See [configuration](#configuration), [one-liners](#one-liners), and the [npm usage guide](docs/npm.md) for stdin, files, gates, and compiled programs. The GitHub development repository is private; installing the npm package does not require repository access. Documentation, skill instructions, and examples are distributed with the package; relative source links refer to those files or a contributor checkout.
+
+## One-liners
+
+```sh
+jeva -o yellow -o blue -i banana
+
+printf 'production is down' | jeva --boolean -q 'Does `input` describe an urgent incident?' --percentage
+
+jeva -f ticket.txt -o billing -o technical -o other \
+  -q 'Which category describes the main request in `input`?' --json
+
+jeva --score -i 'Login is broken with no workaround' \
+  -q 'How severe is the issue in `input`?' \
+  -l 'No user impact' -l 'Workaround exists' -l 'Users are blocked' --probabilities
+```
+
+Use `--json` for complete structured output, `--probabilities` for a distribution, `--confidence` for Choice/Score provider confidence or Boolean certainty, and `--verbose` for diagnostics on stderr. Choose one output mode. Normal results are a single value on stdout:
+
+```sh
+category=$(jeva -o billing -o technical -i "$ticket")
+case "$category" in billing) printf 'billing queue\n';; *) printf 'technical queue\n';; esac
+```
+
+Boolean JSON uses `probability` for P(true), while Score uses `score` for position on an ordered rubric. Neither a score nor provider confidence is a calibrated probability that the answer is correct. One invocation consumes one input; a JSONL file is not automatically split into separate decisions.
+
+## Exit thresholds
+
+```sh
+jeva -o yellow -o blue -i banana --min-probability 0.9 --expect yellow
+```
+
+Exit `0` passes, `1` indicates an error, `3` means uncertain, and `4` means a sufficiently certain answer differs from `--expect`. Gates support Choice and Boolean (use `--expect true` or `false`). A Boolean gate uses the winning answer's probability, so a confident false can pass. Without gates, every valid evaluation exits zero. Results remain on stdout even on exit 3 or 4. These probabilities are model estimates, not measured accuracy.
+
+## Configuration
+
+Supply an existing Vercel AI Gateway key as `AI_GATEWAY_API_KEY`, or create a private dotenv file at `~/.config/jeva/.env`. If `XDG_CONFIG_HOME` is set, use `$XDG_CONFIG_HOME/jeva/.env` instead. The file's contents look like this; replace the placeholder using your editor or secret manager:
+
+```dotenv
+AI_GATEWAY_API_KEY=your_gateway_key
+JEV_MODEL=typesafe-ai/jev
+```
+
+`JEV_MODEL` is optional. On Unix, restrict the global config file to mode `600` and its directory to `700`; the CLI rejects a group/world-accessible global file. You can also use a project's `.env.local` or an explicit `DOTENV_CONFIG_PATH`. Precedence is environment > explicit dotenv path > local `.env.local` > local `.env` > global config. Keep credential files out of version control. Installing Jeva does not create a key or change shell startup files.
+
+Configure a suitable budget on the gateway key. A project budget alone does not cap arbitrary API-key calls. See the [npm guide](docs/npm.md#configuration-and-errors) for common setup failures.
+
+## Documentation map
+
+| Start here                                                                         | What it covers                                                           |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [npm and CLI guide](docs/npm.md)                                                   | Install, setup, stdin/files, JSON, gates, and standalone programs        |
+| [Typed problem compilation](skills/jev-decision/references/problem-compilation.md) | Requirements, candidates, dependencies, and deterministic composition    |
+| [Current-work reasoning loop](skills/jev-decision/references/reasoning-loop.md)    | Supply actual task state, audit useful opportunities, act, and update    |
+| [Recursive spaces](skills/jev-decision/references/recursive-spaces.md)             | Bounded parallel frontiers and explicit unresolved obligations           |
+| [Formal contracts](skills/jev-decision/references/formal-model.md)                 | Assumptions, invariants, evidence semantics, and limits of confidence    |
+| [Building Jeva with Jev](docs/building-jeva-with-jev.md)                           | Recorded development decisions and changes from real use                 |
+| [Evaluation record](docs/skill-evaluation.md)                                      | Distinguishes offline checks, live observations, and unmeasured accuracy |
+
 ## Mission
+
+For async/await, result forwarding, bounded parallel tasks, and fan-in, see [async programs](docs/async-programs.md). Run `npm run demo:async` offline or `npm run jev:async` with the gateway.
+
+Read [how Jeva is built with Jev](docs/building-jeva-with-jev.md) for the actual development loop, live decision traces, invocation boundaries, and improvements made from observed failures. A runnable [development problem state](docs/development-problem.json) accompanies the account.
 
 Represent complex problems as executable, inspectable decision programs. Rather than leaving the structure of a task implicit in a conversation, encode its objective, state, requirements, alternatives, dependencies, and stopping conditions in typed TypeScript. Compile that representation, use Jev for semantic observations, and compose the results with deterministic code into an answer the user can interpret.
 
@@ -22,13 +141,13 @@ See the [problem-compilation contract](skills/jev-decision/references/problem-co
 
 ## Run a compiled workflow
 
-From the checkout, these short commands compile the examples before running them:
+For contributors in a checkout with development dependencies installed, these short commands compile the examples before running them. They are repository npm scripts, not global `jeva` subcommands:
 
-| Workflow | Offline fixture | Live Jev |
-| --- | --- | --- |
-| Audit missing semantic observations | `npm run demo:audit` | `npm run jev:audit` |
+| Workflow                             | Offline fixture       | Live Jev             |
+| ------------------------------------ | --------------------- | -------------------- |
+| Audit missing semantic observations  | `npm run demo:audit`  | `npm run jev:audit`  |
 | Compare designs against requirements | `npm run demo:decide` | `npm run jev:decide` |
-| Explore bounded recursive frontiers | `npm run demo:search` | `npm run jev:search` |
+| Explore bounded recursive frontiers  | `npm run demo:search` | `npm run jev:search` |
 
 Live commands use the configured gateway key. Offline outputs are synthetic and test control flow only. The default inputs are demonstration tasks, including the audit's activity history. For an audit of actual work, provide a current task snapshot:
 
@@ -58,7 +177,11 @@ const problem: Problem = {
     { id: "uncertain", statement: "Keep uncertain requirements unresolved" },
   ],
   candidates: [
-    { id: "frontier", description: "Batch independent checks in bounded frontiers; keep uncertain checks unresolved" },
+    {
+      id: "frontier",
+      description:
+        "Batch independent checks in bounded frontiers; keep uncertain checks unresolved",
+    },
   ],
 };
 ```
@@ -94,61 +217,17 @@ The compiler checks the TypeScript representation; graph preflight checks IDs, d
 
 The final projection is a candidate design or review outcome, with requirement observations, probabilities, and unresolved obligations. For recursive work, the same separation holds: the caller proposes children, Jev judges their supplied claims, and code controls admission and traversal. A supported leaf remains a local candidate until an appropriate verifier establishes the requested result.
 
-## Setup
-
-Requires Node 22+.
-
-```sh
-npm install
-npm run build
-npm link
-# Provision a dedicated $100 non-resetting key into your private global config:
-node scripts/setup-global-key.mjs <your-vercel-team-slug>
-```
-
-The setup script saves the key in `~/.config/jeva/.env` (or `$XDG_CONFIG_HOME/jeva/.env`) with file mode 600, in a directory with mode 700. It never prints the key or overwrites an existing config. `jeva` reads that config from any working directory. You can instead put an existing key in gitignored `.env.local`. Precedence: environment > `DOTENV_CONFIG_PATH` > local `.env.local` > local `.env` > global config. Nothing is added to shell startup files. The dedicated key's $100 cap has no reset; project budgets alone do not limit API-key calls. Gateway budget checks can allow the request crossing the limit to finish.
-
-The development key `jeva-cli` was created in **Justin's projects** (`justins-projects-3aef6e08`) with a $100 non-resetting limit. No key value is stored in this README or tracked files.
-
-## One-liners
-
-```sh
-jeva -o yellow -o blue -i banana
-# yellow
-
-printf 'production is down' | jeva --boolean -q 'Does `input` describe an urgent incident?' --percentage
-
-jeva --score -i 'Login is broken with no workaround' \
-  -q 'How severe is the issue in `input`?' \
-  -l 'No user impact' -l 'Workaround exists' -l 'Users are blocked' --probabilities
-```
-
-Use `--json` for complete structured output, `--probabilities` for a distribution, `--confidence` for Choice/Score certainty, and `--verbose` for diagnostics on stderr. Normal results are a single value on stdout, which makes this natural:
-
-```sh
-category=$(jeva -o billing -o technical -i "$ticket")
-case "$category" in billing) printf 'billing queue\n';; *) printf 'technical queue\n';; esac
-```
-
-## Exit thresholds
-
-```sh
-jeva -o yellow -o blue -i banana --min-probability 0.9 --expect yellow
-```
-
-Exit `0` passes, `1` indicates an error, `3` means uncertain, and `4` means a sufficiently certain answer differs from `--expect`. Gates support Choice and Boolean (use `--expect true` or `false`). A Boolean gate uses the winning answer's probability, so a confident false can pass. Without gates, every valid evaluation exits zero. Results remain on stdout even on exit 3 or 4. These probabilities are model estimates, not measured accuracy.
-
 ## Agent skills
 
-The editable [skills](skills) are linked into `.agents/skills` for repository discovery and `~/.agents/skills` for development from other folders. Open a fresh agent session to refresh its skill catalog. Names/descriptions match tasks, and the detailed instructions load only when selected, following [the skill discovery model](https://learn.chatgpt.com/docs/build-skills).
+The [skills](skills) contain reusable agent instructions for invoking Jeva and interpreting its results. An npm install includes the files but does not install them into your agent's skill directory. Contributors may link these canonical sources into `.agents/skills` or their personal skill directory. Names/descriptions match tasks, and detailed instructions load only when selected.
 
-| Skill | Useful agent task |
-| --- | --- |
-| `jev` | Base program-design guidance, formal contracts, and bounded recursive exploration |
-| `jev-triage` | Classify tickets, intents, and reported tool failures into known categories |
-| `jev-evidence` | Check atomic claims against supplied evidence or verify extracted candidates |
-| `jev-rank` | Filter retrieved context and score items on explicit semantic rubrics |
-| `jev-decision` | Compose or tune batches, dependencies, and deterministic decision policies |
+| Skill          | Useful agent task                                                                 |
+| -------------- | --------------------------------------------------------------------------------- |
+| `jev`          | Base program-design guidance, formal contracts, and bounded recursive exploration |
+| `jev-triage`   | Classify tickets, intents, and reported tool failures into known categories       |
+| `jev-evidence` | Check atomic claims against supplied evidence or verify extracted candidates      |
+| `jev-rank`     | Filter retrieved context and score items on explicit semantic rubrics             |
+| `jev-decision` | Compose or tune batches, dependencies, and deterministic decision policies        |
 
 Example prompt in another folder: “Use $jev-triage to classify the tickets in tickets.jsonl into billing, technical, or other. Preserve IDs, return probabilities, and flag ambiguous cases for review. Start with five records and do not modify the source file.”
 
@@ -158,12 +237,26 @@ The [recursive search implementation](src/search.ts) evaluates independent front
 
 ## JevScript: compileable decision programs
 
-For a real decision tree, write a normal TypeScript module with `defineProgram`. Each layer of independent questions is one fast Jev evaluation; dependency edges cause a later evaluation only when needed. The runner validates unique IDs, missing dependencies, cycles, and a bounded graph before any gateway call.
+For a real decision tree, write a normal TypeScript module with `defineProgram`. Each nonempty enabled layer of independent questions shares one Jev evaluation; dependency edges cause a later evaluation only when needed. The runner validates unique IDs, missing dependencies, cycles, and a bounded graph before any gateway call.
 
 See [examples/fruit-decision.ts](examples/fruit-decision.ts). Compile templates under `examples/` with `npm run build:examples`, then run `jeva run dist/templates/examples/fruit-decision.js -i banana`. The runtime API is `runProgram(program, input, evaluate)` in [src/program.ts](src/program.ts); it is Effect-based and deliberately injectable, so graph behavior is testable without spending money.
+
+For an npm consumer's own project, install Jeva locally and follow the [standalone typed program recipe](docs/npm.md#typed-programs-in-your-project). `jeva run` loads a compiled JavaScript module with a default-exported program; it does not compile TypeScript or parse stdin JSON into an object automatically.
+
+## Contributor setup
+
+Contributors with repository access can install development dependencies and link the built CLI:
+
+```sh
+npm install
+npm run build
+npm link
+```
 
 ```sh
 npm test
 ```
+
+Run `npm run verify` for the full formatting, strict Oxlint, Effect diagnostics, TypeScript, tests, and example-compilation checks. Use `npm run format` to format the repository and `npm run hooks:install` to enable the same verification before commits. CI also runs the full suite; hooks are opt-in and do not replace CI.
 
 The tests exercise deterministic batching/routing, graph preflight, config precedence/privacy, and exit policies. They do not prove model correctness or sandbox execution. Program files are trusted JavaScript modules imported with Node privileges; compile TypeScript and inspect generated code before running it. See [the program recipe](skills/jev-decision/references/programs.md) for a short build-and-run workflow.

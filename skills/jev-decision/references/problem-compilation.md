@@ -6,6 +6,8 @@ Define P = (X, R, C, O, D, G, K, V): typed state X, requirements R, candidate al
 
 The compiler checks the host-language representation. It does not prove that natural-language criteria have the intended semantics. State proof obligations and verify deterministic properties with tests or appropriate proof tools. Keep model error and specification error separate.
 
+Use the actual problem state as extensively as practical, not a fixed example substituted for the user's task. `npm run jev:decide -- --state problem.json` loads a validated objective, requirements, and candidates into the compiled controller. Without `--live`, external problem state receives synthetic insufficient observations for safe orchestration testing. The bundled example remains a labeled demonstration.
+
 ## Required working procedure
 
 1. Translate the user's actual task into typed inputs and outputs. Record what a usable answer must establish, and which parts remain assumptions or unverified observations.
