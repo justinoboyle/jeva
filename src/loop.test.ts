@@ -414,3 +414,37 @@ test("invalid limits, malformed responses and manual review have distinct outcom
   assert.equal(review.reason, "requested_review");
   assert.equal(review.calls.length, 0);
 });
+
+test("valid answers survive non-JSON transport metadata outside the answer envelope", async () => {
+  const report = await runLoop(
+    { count: 0 },
+    async (state, context) => {
+      const call = await context.evaluate(request);
+      return { state, consumedCallIds: [call.callId], exitCallId: call.callId };
+    },
+    options({
+      evaluate: async () => ({
+        answers: { exit: answer() },
+        transport: { decode: () => "opaque SDK object", counter: 1n },
+      }),
+    }),
+  );
+  assert.equal(report.status, "complete");
+  assert.equal(report.calls[0].status, "succeeded");
+  assert.equal(JSON.stringify(report).includes("opaque SDK object"), false);
+});
+
+test("non-JSON values inside answers still fail response validation", async () => {
+  const report = await runLoop(
+    { count: 0 },
+    async (state, context) => {
+      const call = await context.evaluate(request);
+      return { state, consumedCallIds: [call.callId], exitCallId: call.callId };
+    },
+    options({
+      evaluate: async () => ({ answers: { exit: { ...answer(), invalid: () => "not JSON" } } }),
+    }),
+  );
+  assert.equal(report.status, "error");
+  assert.equal(report.calls[0].errorCode, "invalid_response");
+});
