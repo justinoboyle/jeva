@@ -1,0 +1,28 @@
+{
+  "name": "jeva",
+  "version": "0.1.0",
+  "description": "Fast, composable structured decisions with Jev through Vercel AI Gateway.",
+  "type": "module",
+  "bin": {
+    "jeva": "dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "test": "npm run build && node --test dist",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ai": "^7.0.106",
+    "dotenv": "^16.6.1",
+    "effect": "^4.0.0-rc.115",
+    "tsx": "^4.23.13"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "typescript": "^5.9.3"
+  }
+}
