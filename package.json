@@ -22,6 +22,22 @@
     "jeva": "dist/cli.js"
   },
   "exports": {
+    "./loop": {
+      "types": "./dist/loop.d.ts",
+      "import": "./dist/loop.js"
+    },
+    "./receipt": {
+      "types": "./dist/receipt.d.ts",
+      "import": "./dist/receipt.js"
+    },
+    "./loop-verify": {
+      "types": "./dist/loop-verify.d.ts",
+      "import": "./dist/loop-verify.js"
+    },
+    "./gateway": {
+      "types": "./dist/gateway.d.ts",
+      "import": "./dist/gateway.js"
+    },
     "./program": {
       "types": "./dist/program.d.ts",
       "import": "./dist/program.js"
@@ -37,6 +53,7 @@
     "!dist/*.test.js",
     "!dist/*.test.d.ts",
     "skills/",
+    "CONTRIBUTING.md",
     "docs/",
     "examples/",
     "src/*.ts",
@@ -71,7 +88,10 @@
     "demo:audit": "node scripts/workflow.mjs audit",
     "demo:decide": "node scripts/workflow.mjs decide",
     "demo:search": "node scripts/workflow.mjs search",
-    "demo:async": "node scripts/workflow.mjs async"
+    "demo:async": "node scripts/workflow.mjs async",
+    "demo:loop": "node scripts/workflow.mjs loop",
+    "jev:loop": "node scripts/workflow.mjs loop --live",
+    "test:package": "node scripts/package-smoke.mjs"
   },
   "dependencies": {
     "ai": "^7.0.106",

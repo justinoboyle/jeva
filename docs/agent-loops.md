@@ -90,11 +90,14 @@ For a repeated task, a trusted compiled module default-exports its loop definiti
 
 ```sh
 jeva loop task-loop.js --input-json state.json --report loop-report.json
+jeva verify-loop loop-report.json --require-live --require-complete
 ```
 
 Omit `--input-json` to use the module's declared initial state. The controller injects its bounded evaluator context into each step. The CLI does not generate tools, implement arbitrary actions from prose, or accept a completion flag that bypasses the declared exit policy.
 
 The independent exit-gate command evaluates supplied data without calling Jev:
+
+`verify-loop` validates report structure, state-hash continuity, call/round bounds, consumption IDs, and exit-observation digests, then recomputes the exit gate. `--require-complete` rejects other terminal outcomes; `--require-live` rejects fixture mode. `--digest` compares a separately retained report hash. Like program receipts, this is consistency verification rather than authentication. It never executes the reported module or calls a model.
 
 ```sh
 jeva exit --policy policy.json --answer answer.json

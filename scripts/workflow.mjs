@@ -9,14 +9,27 @@ const commands = {
   decide: "compiled-problem",
   search: "recursive-space",
   async: "async-fanout",
+  loop: "agent-loop",
 };
 const [command, ...flags] = process.argv.slice(2);
 let valid = Object.hasOwn(commands, command);
 let stateSeen = false;
 let liveSeen = false;
+let reportSeen = false;
 for (let index = 0; index < flags.length; index++) {
   if (flags[index] === "--live" && !liveSeen) {
     liveSeen = true;
+    continue;
+  }
+  if (
+    flags[index] === "--report" &&
+    command === "loop" &&
+    !reportSeen &&
+    flags[index + 1] &&
+    !flags[index + 1].startsWith("--")
+  ) {
+    reportSeen = true;
+    index++;
     continue;
   }
   if (
@@ -34,7 +47,7 @@ for (let index = 0; index < flags.length; index++) {
 }
 if (!valid) {
   console.error(
-    "Usage: node scripts/workflow.mjs <audit|decide|search|async> [--live] [--state task.json (audit/decide)]",
+    "Usage: node scripts/workflow.mjs <audit|decide|search|async|loop> [--live] [--state task.json (audit/decide)] [--report report.json (loop)]",
   );
   process.exit(1);
 }

@@ -33,12 +33,13 @@ export function gatewayEvaluator(): Evaluate {
     configuration ??= configValue();
     const config = await configuration;
     process.env.AI_GATEWAY_API_KEY = config.apiKey;
-    return evaluate({
+    const result = await evaluate({
       model: config.model,
       state,
       questions,
       abortSignal: request.signal,
       maxRetries: 0,
     });
+    return { answers: result.answers };
   };
 }

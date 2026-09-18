@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, realpath, rm, stat, writeFile } from "node:fs
 import { tmpdir } from "node:os";
 import { basename, delimiter, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Predicate } from "effect";
 
 const checkout = fileURLToPath(new URL("../", import.meta.url));
 if (Number(process.versions.node.split(".")[0]) < 22) {
@@ -13,11 +14,6 @@ const childEnv = {
   ...process.env,
   PATH: [dirname(process.execPath), process.env.PATH ?? ""].join(delimiter),
 };
-
-/** @param {unknown} value @returns {value is Record<string, unknown>} */
-function isRecord(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 /**
  * @param {string} command
@@ -58,7 +54,7 @@ function assertPublicFile(name) {
   );
   assert(!/\.(?:test|spec)\./.test(name), `Test file in package: ${name}`);
   const allowed =
-    /^(?:package\.json|README\.md|LICENSE(?:\.[^/]*)?|tsconfig(?:\.examples)?\.json|dist\/[^/]+\.(?:js|d\.ts)|src\/[^/]+\.ts|docs\/.+\.(?:md|json)|examples\/.+\.ts|skills\/.+\.(?:md|mjs|yaml)|scripts\/(?:workflow\.mjs|tsconfig\.json))$/;
+    /^(?:package\.json|README\.md|CONTRIBUTING\.md|LICENSE(?:\.[^/]*)?|tsconfig(?:\.examples)?\.json|dist\/[^/]+\.(?:js|d\.ts)|src\/[^/]+\.ts|docs\/.+\.(?:md|json)|examples\/.+\.ts|skills\/.+\.(?:md|mjs|yaml)|scripts\/(?:workflow\.mjs|tsconfig\.json))$/;
   assert(allowed.test(name), `Unexpected public package file: ${name}`);
 }
 
@@ -70,13 +66,20 @@ try {
   assert(Array.isArray(decoded) && decoded.length === 1, "Expected one npm pack result");
   /** @type {unknown} */
   const archive = decoded[0];
-  assert(isRecord(archive) && typeof archive.filename === "string" && Array.isArray(archive.files));
+  assert(
+    Predicate.isObject(archive) &&
+      typeof archive.filename === "string" &&
+      Array.isArray(archive.files),
+  );
   assert.equal(basename(archive.filename), archive.filename, "Archive filename must be local");
   const files = new Set(
     archive.files.map(
       /** @param {unknown} item */
       (item) => {
-        assert(isRecord(item) && typeof item.path === "string", "Invalid npm file metadata");
+        assert(
+          Predicate.isObject(item) && typeof item.path === "string",
+          "Invalid npm file metadata",
+        );
         assertPublicFile(item.path);
         return item.path;
       },
@@ -113,12 +116,25 @@ try {
   const installed = join(consumer, "node_modules", "jeva");
   /** @type {unknown} */
   const manifest = JSON.parse(await readFile(join(installed, "package.json"), "utf8"));
-  assert(isRecord(manifest) && manifest.name === "jeva" && isRecord(manifest.bin));
+  assert(
+    Predicate.isObject(manifest) && manifest.name === "jeva" && Predicate.isObject(manifest.bin),
+  );
   assert.equal(manifest.bin.jeva, "dist/cli.js");
-  assert(isRecord(manifest.exports), "Package must export its typed program API");
-  for (const name of ["./program", "./search"]) {
+  assert(Predicate.isObject(manifest.exports), "Package must export its typed program API");
+  for (const name of [
+    "./program",
+    "./search",
+    "./loop",
+    "./receipt",
+    "./loop-verify",
+    "./gateway",
+  ]) {
     const entry = manifest.exports[name];
-    assert(isRecord(entry) && typeof entry.import === "string" && typeof entry.types === "string");
+    assert(
+      Predicate.isObject(entry) &&
+        typeof entry.import === "string" &&
+        typeof entry.types === "string",
+    );
     assert(files.has(entry.import.replace(/^\.\//, "")), `Missing import for ${name}`);
     assert(files.has(entry.types.replace(/^\.\//, "")), `Missing declarations for ${name}`);
   }
@@ -142,7 +158,13 @@ try {
     `import assert from "node:assert/strict";
 import { defineProgram, runProgram } from "jeva/program";
 import { searchSpace } from "jeva/search";
+import { runLoop } from "jeva/loop";
+import { verifyLoopReport } from "jeva/loop-verify";
+import { recordProgram, verifyReceipt } from "jeva/receipt";
+import { gatewayEvaluator } from "jeva/gateway";
+import { Schema } from "effect";
 assert.equal(typeof searchSpace, "function");
+assert.equal(typeof gatewayEvaluator, "function");
 const installedRuntime = await import("./node_modules/jeva/dist/program.js");
 assert.equal(installedRuntime.runProgram, runProgram);
 const program = defineProgram({ nodes: [
@@ -155,6 +177,19 @@ const answers = await runProgram(program, {}, async () => {
   throw new Error("Deterministic package smoke must never invoke a model");
 });
 assert.equal(answers.sum.value, 5);
+const recorded = await recordProgram(program, {}, async () => { throw new Error("No model call expected"); }, { programId: "smoke", mode: "fixture" });
+assert.equal(verifyReceipt(recorded.receipt).ok, true);
+assert.equal(verifyReceipt(recorded.receipt, { requireLive: true }).ok, false);
+const report = await runLoop({ n: 1 }, async (state, ctx) => {
+  const call = await ctx.evaluate({ state, questions: { exit: { type: "choice", instructions: "Fixture", criteria: { done: "done", more: "more" } } } });
+  return { state, consumedCallIds: [call.callId], exitCallId: call.callId };
+}, {
+  stateSchema: Schema.Struct({ n: Schema.Number }), mode: "fixture", maxCalls: 1, maxRounds: 1,
+  exitPolicy: { answerId: "exit", labels: { done: "complete", more: "continue" }, minProbability: 0.9, minMargin: 0.2 },
+  evaluate: async () => ({ answers: { exit: { type: "choice", choice: "done", probabilities: { done: 1, more: 0 } } } }),
+});
+assert.equal(report.status, "complete");
+assert.equal(verifyLoopReport(report, { requireComplete: true }).ok, true);
 console.log("Installed exports and task fan-in passed.");
 `,
   );
