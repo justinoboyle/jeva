@@ -53,7 +53,7 @@
     "prepublishOnly": "npm run verify",
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts",
-    "test": "npm run build && node --test dist scripts/quality.test.mjs",
+    "test": "npm run build && node --test dist/*.test.js scripts/quality.test.mjs",
     "check": "tsc --noEmit && tsc -p scripts/tsconfig.json",
     "lint": "oxlint --deny-warnings --report-unused-disable-directives",
     "lint:fix": "npm run lint -- --fix",
