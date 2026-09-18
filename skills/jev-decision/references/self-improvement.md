@@ -39,3 +39,13 @@ These seeds are specifications, not a claim that a new live evaluation passed. U
 | Conditional predecessor skipped | Fake evaluator: absent output handled explicitly downstream | Unsafe access to missing answers |
 
 A live result reported as 100% remains a rounded model estimate. Do not make it a proof, a regression oracle, or an empirical accuracy measurement. Report hand analysis and model predictions separately when they disagree.
+
+## Lessons from developing the compiled loop
+
+- Represent the actual current problem. A fixed demonstration is useful for integration, but cannot audit changed work. Use validated `--state` inputs for the audit and candidate/requirement program; preserve the input snapshot with the evaluation when appropriate.
+- External inputs in an offline fixture must not receive fabricated semantic support. The generic decision fixture emits synthetic insufficient observations and a review outcome. Exercise success paths with explicitly labeled fixtures.
+- Move recurring compiler flags and inline shell programs into checked-in commands. Short entry points make the state and program easier to review without discarding their formal structure.
+- Finish and commit an already validated increment before broadening research when incremental commits are authorized. Maintain separate evidence for model judgments, tests, and Git publication.
+- When a user identifies missing composition features, add them to the typed program contract and test the deterministic behavior; do not solve every request by adding more isolated prompts.
+
+The concrete development account is [building-jeva-with-jev.md](../../../docs/building-jeva-with-jev.md). It records actual calls, abstentions, and changes, and distinguishes source/skill improvement from model training.

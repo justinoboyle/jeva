@@ -95,6 +95,7 @@ export async function searchSpace(spec: SearchSpec, evaluate: SearchEvaluator): 
       result.unresolved.push({ path: item.path, reason: "call_limit" });
     }
     // Effect preserves input order and bounds in-flight requests. Errors are caught per batch.
+    // oxlint-disable-next-line eslint/no-await-in-loop -- The next frontier depends on this frontier's accepted observations.
     const judged = await Effect.runPromise(Effect.forEach(scheduled, batch => Effect.promise(async () => {
       const input = { objective: spec.objective, candidates: batch.map(item => item.candidate) };
       const program = defineProgram({ nodes: batch.map((_, i) => ({
@@ -156,6 +157,7 @@ export async function searchSpace(spec: SearchSpec, evaluate: SearchEvaluator): 
         result.unresolved.push({ path: record.path, reason: result.calls >= limits.maxCalls ? "call_limit" : "node_limit" }); continue;
       }
       try {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- Ordered admission reserves the remaining node budget before each expansion.
         const children = await spec.expand(record.candidate, {
           path: record.path, depth: record.depth, remainingNodes: limits.maxNodes - seen.size,
           signal: AbortSignal.timeout(limits.timeoutMs),

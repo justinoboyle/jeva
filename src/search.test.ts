@@ -66,6 +66,7 @@ test("review, insufficient, and contradictions are preserved and never expanded"
 
 test("depth, node, and call limits stop expansion with unresolved paths", async () => {
   for (const limits of [{ maxDepth: 0 }, { maxNodes: 1 }, { maxCalls: 1, batchSize: 1 }]) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- Each boundary case is asserted before the next independent scenario starts.
     const result = await searchSpace({ objective: "bounded", roots: [node("root")], limits,
       expand: async parent => [node(`${parent.id}-child`)],
     }, accepts);

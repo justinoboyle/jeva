@@ -1,3 +1,5 @@
+import { Schema } from "effect";
+
 export type QuestionType = "choice" | "boolean" | "score";
 
 export type Options = {
@@ -48,13 +50,35 @@ export function buildRequest(options: Options) {
   return { state: { input: options.input }, questions: { answer: { type: "boolean" as const, instructions } } };
 }
 
-export function selectOutput(result: any, options: Options): unknown {
+const OutputSchema = Schema.Struct({
+  answers: Schema.Struct({ answer: Schema.Struct({
+    choice: Schema.optional(Schema.String),
+    probability: Schema.optional(Schema.Number),
+    score: Schema.optional(Schema.Number),
+    probabilities: Schema.optional(Schema.Record(Schema.String, Schema.Number)),
+    confidence: Schema.optional(Schema.Number),
+  }) }),
+  providerMetadata: Schema.optional(Schema.Struct({
+    typesafe: Schema.optional(Schema.Struct({
+      confidence: Schema.optional(Schema.Struct({ answer: Schema.optional(Schema.Number) })),
+    })),
+  })),
+});
+
+export function selectOutput(result: unknown, options: Options): unknown {
+  if (!Schema.is(OutputSchema)(result)) throw new Error("Invalid evaluation output");
   const answer = result.answers.answer;
   if (options.json) return result;
-  if (options.probabilities) return answer.probabilities ?? { true: answer.probability, false: 1 - answer.probability };
+  if (options.probabilities) {
+    if (answer.probabilities) return answer.probabilities;
+    if (answer.probability === undefined) throw new Error("Probability output is unavailable");
+    return { true: answer.probability, false: 1 - answer.probability };
+  }
   if (options.confidence) return answer.confidence ?? result.providerMetadata?.typesafe?.confidence?.answer ?? Math.abs((answer.probability ?? 0.5) - 0.5) * 2;
   if (options.percentage) {
-    const value = answer.probability ?? answer.probabilities?.[answer.choice] ?? answer.score / Math.max(1, options.levels.length - 1);
+    const value = answer.probability ?? (answer.choice === undefined ? undefined : answer.probabilities?.[answer.choice]) ??
+      (answer.score === undefined ? undefined : answer.score / Math.max(1, options.levels.length - 1));
+    if (value === undefined) throw new Error("Percentage output is unavailable");
     return Math.round(value * 10000) / 100;
   }
   return answer.choice ?? answer.score ?? answer.probability;

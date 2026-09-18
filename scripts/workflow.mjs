@@ -14,13 +14,13 @@ let stateSeen = false;
 let liveSeen = false;
 for (let index = 0; index < flags.length; index++) {
   if (flags[index] === "--live" && !liveSeen) { liveSeen = true; continue; }
-  if (flags[index] === "--state" && command === "audit" && !stateSeen && flags[index + 1] && !flags[index + 1].startsWith("--")) {
+  if (flags[index] === "--state" && ["audit", "decide"].includes(command) && !stateSeen && flags[index + 1] && !flags[index + 1].startsWith("--")) {
     stateSeen = true; index++; continue;
   }
   valid = false;
 }
 if (!valid) {
-  console.error("Usage: node scripts/workflow.mjs <audit|decide|search> [--live] [--state audit.json]");
+  console.error("Usage: node scripts/workflow.mjs <audit|decide|search> [--live] [--state task.json (audit/decide)]");
   process.exit(1);
 }
 if (Number(process.versions.node.split(".")[0]) < 22) {

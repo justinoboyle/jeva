@@ -17,6 +17,7 @@ type DesignReport = {
 };
 let gate: (answer: Answer | undefined, labels: readonly string[], minimum?: number, separation?: number) => GateResult;
 let readReasoningState: (file: string) => Promise<unknown>;
+let readProblemState: (file: string) => Promise<unknown>;
 let design: DesignReport;
 let fixtureDirectory: string;
 let fixtureId = 0;
@@ -37,6 +38,8 @@ before(async () => {
   ({ gate } = await import(moduleUrl));
   const stateUrl = pathToFileURL(resolve(checkout, "dist/templates/examples/support/reasoning-state.js")).href;
   ({ readReasoningState } = await import(stateUrl));
+  const problemUrl = pathToFileURL(resolve(checkout, "dist/templates/examples/support/problem-state.js")).href;
+  ({ readProblemState } = await import(problemUrl));
   fixtureDirectory = await mkdtemp(resolve(tmpdir(), "jeva-workflow-test-"));
 });
 
@@ -80,13 +83,62 @@ test("workflow audit fixture yields a gated proposal after two dependency rounds
 test("workflow rejects unknown commands and flags without running an example", () => {
   for (const args of [[], ["unknown"], ["decide", "--unknown"], ["audit", "--live", "--unknown"],
     ["audit", "--live", "--live"], ["audit", "--state"], ["audit", "--state", "--live"],
-    ["audit", "--state", "one.json", "--state", "two.json"], ["decide", "--state", "one.json"]]) {
+    ["audit", "--state", "one.json", "--state", "two.json"], ["search", "--state", "one.json"]]) {
     const result = runWorkflow(args);
     assert.ifError(result.error);
     assert.equal(result.status, 1);
     assert.equal(result.stdout, "");
     assert.match(result.stderr, /Usage:/);
   }
+});
+
+const problem = {
+  objective: "Choose a useful evidence-checking workflow for this task.",
+  requirements: [{ id: "grounded", statement: "Preserve evidence references in the answer." }],
+  candidates: [
+    { id: "review", description: "Return missing evidence for review." },
+    { id: "evaluate", description: "Evaluate the supplied evidence and preserve references." },
+  ],
+};
+
+test("decide compiles the caller's problem state rather than the embedded design example", async () => {
+  const file = await stateFile(problem);
+  const result = runWorkflow(["decide", "--state", file.split("/").at(-1)!], fixtureDirectory);
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.mode, "offline-fixture");
+  assert.equal(report.inputSource, "provided-state");
+  assert.equal(report.objective, problem.objective);
+  assert.deepEqual(report.observations.map((observation: { id: string }) => observation.id), ["c0_r0", "c1_r0"]);
+  assert.ok(report.observations.every((observation: GateResult) => observation.status === "accepted" && observation.choice === "insufficient"));
+  assert.equal(report.calls, 1);
+  assert.deepEqual(report.eligible, []);
+  assert.equal(Object.hasOwn(report, "selection"), false);
+  assert.deepEqual(report.outcome, { status: "review" });
+});
+
+test("problem state parser rejects malformed, empty, duplicate, and over-budget problems", async () => {
+  assert.deepEqual(await readProblemState(await stateFile(problem)), problem);
+  for (const input of [
+    { ...problem, objective: " " }, { ...problem, requirements: [] }, { ...problem, candidates: [] },
+    { ...problem, requirements: "not an array" },
+    { ...problem, requirements: [problem.requirements[0], problem.requirements[0]] },
+    { ...problem, candidates: [problem.candidates[0], problem.candidates[0]] },
+    { ...problem, requirements: [{ id: "", statement: "Evidence is required." }] },
+    { ...problem, requirements: [{ id: "grounded", statement: " " }] },
+    { ...problem, candidates: [{ id: "", description: "Evaluate evidence." }] },
+    { ...problem, candidates: [{ id: "evaluate", description: " " }] },
+    { ...problem, objective: "é".repeat(32_001) },
+    { ...problem, candidates: [problem.candidates[0]], requirements: Array.from({ length: 128 }, (_, i) => ({ id: `r${i}`, statement: "Preserve references." })) },
+  ]) {
+    await assert.rejects(readProblemState(await stateFile(input)));
+  }
+  const boundary = { ...problem, candidates: [problem.candidates[0]], requirements: Array.from({ length: 127 }, (_, i) => ({ id: `r${i}`, statement: "Preserve references." })) };
+  assert.deepEqual(await readProblemState(await stateFile(boundary)), boundary);
+  const invalidJson = resolve(fixtureDirectory, "invalid-problem.json");
+  await writeFile(invalidJson, "{");
+  await assert.rejects(readProblemState(invalidJson));
 });
 
 const state = {

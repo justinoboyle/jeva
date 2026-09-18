@@ -19,7 +19,7 @@ const readEnv = Effect.fnUntraced(function*(path: string, privateFile: boolean) 
         }
         return parse(await readFile(path));
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+        if (Schema.is(Schema.Struct({ code: Schema.Literal("ENOENT") }))(error)) return {};
         throw error;
       }
     },

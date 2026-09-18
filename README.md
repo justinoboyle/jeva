@@ -1,8 +1,61 @@
-# jeva
+# jeva — run TypeSafe Jev from the command line
+
+```sh
+npx jeva -o yellow -o blue -i banana
+```
 
 `jeva` is a small, pipeline-safe CLI for TypeSafe’s Jev decision model through Vercel AI Gateway. It returns declared structured decisions—never generated prose—so shell scripts and TypeScript own control flow.
 
+Use this TypeSafe Jev CLI for classification, evidence checks, Boolean judgments, rubric scores, and compiled decision workflows. Inputs come from an argument, a file, or stdin; outputs can be plain values or JSON with model probabilities.
+
+## Install and make a decision
+
+Requires Node.js 22 or newer and a Vercel AI Gateway API key for model calls. With credentials configured, the first command asks Jev to choose between `yellow` and `blue`; no sample output here is a recorded model response.
+
+```sh
+npm install -g jeva
+jeva --help
+```
+
+Or inspect the command without a global install:
+
+```sh
+npx -y jeva --help
+```
+
+Help does not need credentials. Provide `AI_GATEWAY_API_KEY` through your environment or private configuration, then run:
+
+```sh
+jeva -o billing -o technical -o other -i 'I was charged twice' --json
+```
+
+Or create a dedicated gateway key through your authenticated Vercel account. Choose the team and budget explicitly; there is no default spending limit:
+
+```sh
+jeva setup --scope your-team --budget 10
+```
+
+Setup creates a key with the requested non-resetting budget and stores it in your private global configuration. It is optional when you already supply `AI_GATEWAY_API_KEY`.
+
+Single-question JSON contains the decision at `.answers.answer`. Choice results include `choice` and, when available, `probabilities`. Model calls send the supplied input to the configured gateway and consume its usage budget. The package is a community CLI, not an official TypeSafe or Vercel release.
+
+See [configuration](#configuration), [one-liners](#one-liners), and the [npm usage guide](docs/npm.md) for stdin, files, gates, and compiled programs. The GitHub development repository is private; installing the npm package does not require repository access. Documentation, skill instructions, and examples are distributed with the package; relative source links refer to those files or a contributor checkout.
+
+## Documentation map
+
+| Start here | What it covers |
+| --- | --- |
+| [npm and CLI guide](docs/npm.md) | Install, setup, stdin/files, JSON, gates, and standalone programs |
+| [Typed problem compilation](skills/jev-decision/references/problem-compilation.md) | Requirements, candidates, dependencies, and deterministic composition |
+| [Current-work reasoning loop](skills/jev-decision/references/reasoning-loop.md) | Supply actual task state, audit useful opportunities, act, and update |
+| [Recursive spaces](skills/jev-decision/references/recursive-spaces.md) | Bounded parallel frontiers and explicit unresolved obligations |
+| [Formal contracts](skills/jev-decision/references/formal-model.md) | Assumptions, invariants, evidence semantics, and limits of confidence |
+| [Building Jeva with Jev](docs/building-jeva-with-jev.md) | Recorded development decisions and changes from real use |
+| [Evaluation record](docs/skill-evaluation.md) | Distinguishes offline checks, live observations, and unmeasured accuracy |
+
 ## Mission
+
+Read [how Jeva is built with Jev](docs/building-jeva-with-jev.md) for the actual development loop, live decision traces, invocation boundaries, and improvements made from observed failures. A runnable [development problem state](docs/development-problem.json) accompanies the account.
 
 Represent complex problems as executable, inspectable decision programs. Rather than leaving the structure of a task implicit in a conversation, encode its objective, state, requirements, alternatives, dependencies, and stopping conditions in typed TypeScript. Compile that representation, use Jev for semantic observations, and compose the results with deterministic code into an answer the user can interpret.
 
@@ -22,7 +75,7 @@ See the [problem-compilation contract](skills/jev-decision/references/problem-co
 
 ## Run a compiled workflow
 
-From the checkout, these short commands compile the examples before running them:
+For contributors in a checkout with development dependencies installed, these short commands compile the examples before running them. They are repository npm scripts, not global `jeva` subcommands:
 
 | Workflow | Offline fixture | Live Jev |
 | --- | --- | --- |
@@ -94,29 +147,28 @@ The compiler checks the TypeScript representation; graph preflight checks IDs, d
 
 The final projection is a candidate design or review outcome, with requirement observations, probabilities, and unresolved obligations. For recursive work, the same separation holds: the caller proposes children, Jev judges their supplied claims, and code controls admission and traversal. A supported leaf remains a local candidate until an appropriate verifier establishes the requested result.
 
-## Setup
+## Configuration
 
-Requires Node 22+.
+Supply an existing Vercel AI Gateway key as `AI_GATEWAY_API_KEY`, or create a private dotenv file at `~/.config/jeva/.env`. If `XDG_CONFIG_HOME` is set, use `$XDG_CONFIG_HOME/jeva/.env` instead. The file's contents look like this; replace the placeholder using your editor or secret manager:
 
-```sh
-npm install
-npm run build
-npm link
-# Provision a dedicated $100 non-resetting key into your private global config:
-node scripts/setup-global-key.mjs <your-vercel-team-slug>
+```dotenv
+AI_GATEWAY_API_KEY=your_gateway_key
+JEV_MODEL=typesafe-ai/jev
 ```
 
-The setup script saves the key in `~/.config/jeva/.env` (or `$XDG_CONFIG_HOME/jeva/.env`) with file mode 600, in a directory with mode 700. It never prints the key or overwrites an existing config. `jeva` reads that config from any working directory. You can instead put an existing key in gitignored `.env.local`. Precedence: environment > `DOTENV_CONFIG_PATH` > local `.env.local` > local `.env` > global config. Nothing is added to shell startup files. The dedicated key's $100 cap has no reset; project budgets alone do not limit API-key calls. Gateway budget checks can allow the request crossing the limit to finish.
+`JEV_MODEL` is optional. On Unix, restrict the global config file to mode `600` and its directory to `700`; the CLI rejects a group/world-accessible global file. You can also use a project's `.env.local` or an explicit `DOTENV_CONFIG_PATH`. Precedence is environment > explicit dotenv path > local `.env.local` > local `.env` > global config. Keep credential files out of version control. Installing Jeva does not create a key or change shell startup files.
 
-The development key `jeva-cli` was created in **Justin's projects** (`justins-projects-3aef6e08`) with a $100 non-resetting limit. No key value is stored in this README or tracked files.
+Configure a suitable budget on the gateway key. A project budget alone does not cap arbitrary API-key calls. See the [npm guide](docs/npm.md#configuration-and-errors) for common setup failures.
 
 ## One-liners
 
 ```sh
 jeva -o yellow -o blue -i banana
-# yellow
 
 printf 'production is down' | jeva --boolean -q 'Does `input` describe an urgent incident?' --percentage
+
+jeva -f ticket.txt -o billing -o technical -o other \
+  -q 'Which category describes the main request in `input`?' --json
 
 jeva --score -i 'Login is broken with no workaround' \
   -q 'How severe is the issue in `input`?' \
@@ -130,6 +182,8 @@ category=$(jeva -o billing -o technical -i "$ticket")
 case "$category" in billing) printf 'billing queue\n';; *) printf 'technical queue\n';; esac
 ```
 
+Choose one output mode. Boolean JSON uses `probability` for P(true), while Score uses `score` for position on an ordered rubric. Neither a score nor provider confidence is a calibrated probability that the answer is correct. One invocation consumes one input; a JSONL file is not automatically split into separate decisions.
+
 ## Exit thresholds
 
 ```sh
@@ -140,7 +194,7 @@ Exit `0` passes, `1` indicates an error, `3` means uncertain, and `4` means a su
 
 ## Agent skills
 
-The editable [skills](skills) are linked into `.agents/skills` for repository discovery and `~/.agents/skills` for development from other folders. Open a fresh agent session to refresh its skill catalog. Names/descriptions match tasks, and the detailed instructions load only when selected, following [the skill discovery model](https://learn.chatgpt.com/docs/build-skills).
+The [skills](skills) contain reusable agent instructions for invoking Jeva and interpreting its results. An npm install includes the files but does not install them into your agent's skill directory. Contributors may link these canonical sources into `.agents/skills` or their personal skill directory. Names/descriptions match tasks, and detailed instructions load only when selected.
 
 | Skill | Useful agent task |
 | --- | --- |
@@ -161,6 +215,18 @@ The [recursive search implementation](src/search.ts) evaluates independent front
 For a real decision tree, write a normal TypeScript module with `defineProgram`. Each layer of independent questions is one fast Jev evaluation; dependency edges cause a later evaluation only when needed. The runner validates unique IDs, missing dependencies, cycles, and a bounded graph before any gateway call.
 
 See [examples/fruit-decision.ts](examples/fruit-decision.ts). Compile templates under `examples/` with `npm run build:examples`, then run `jeva run dist/templates/examples/fruit-decision.js -i banana`. The runtime API is `runProgram(program, input, evaluate)` in [src/program.ts](src/program.ts); it is Effect-based and deliberately injectable, so graph behavior is testable without spending money.
+
+For an npm consumer's own project, install Jeva locally and follow the [standalone typed program recipe](docs/npm.md#typed-programs-in-your-project). `jeva run` loads a compiled JavaScript module with a default-exported program; it does not compile TypeScript or parse stdin JSON into an object automatically.
+
+## Contributor setup
+
+Contributors with repository access can install development dependencies and link the built CLI:
+
+```sh
+npm install
+npm run build
+npm link
+```
 
 ```sh
 npm test

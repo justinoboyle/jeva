@@ -1,0 +1,13 @@
+{
+  "objective": "Explain and improve how a developer agent uses Jev to build its own decision tooling, representing actual problem state while keeping the account evidence-based.",
+  "requirements": [
+    { "id": "explicit-state", "statement": "Represent the current development objective, requirements, and candidate approaches as typed program inputs." },
+    { "id": "feedback", "statement": "Use observed failures or missed semantic opportunities to improve the program or its instructions." },
+    { "id": "honest-boundary", "statement": "Distinguish model judgments from implementation verification and human or agent authorship." }
+  ],
+  "candidates": [
+    { "id": "autonomous-model-story", "description": "Claim that Jev independently writes and proves the software, without recording typed task state, explicit observations, or external verification." },
+    { "id": "compiled-feedback-loop", "description": "Represent the current development objective, requirements, and candidate approaches as typed inputs. Evaluate semantic observations in parallel, gate eligibility in code, and use dependent judgments when needed. Retain traces of observed failures and missed opportunities to improve the program and instructions. Explain that Jev returns labels and probabilities, the agent writes code and prose, and executable tests verify implementation behavior." },
+    { "id": "typed-static-report", "description": "Represent the current development objective, requirements, and candidate approaches as typed inputs, and document model judgments separately from agent-authored code and executable verification. Record the observed results once, but do not feed failures or missed opportunities into improvements." }
+  ]
+}

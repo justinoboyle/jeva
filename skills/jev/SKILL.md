@@ -47,6 +47,8 @@ If no Jev question fits, identify what is missing: evidence retrieval, candidate
 
 ## Local types and interfaces
 
+Represent current problem states, not just recurring examples: `npm run jev:decide -- --state problem.json` evaluates typed requirements and alternatives; `npm run jev:audit -- --state task.json` audits current work. Reuse the compiled controller but update its supplied state whenever the objective, evidence, or unresolved obligations change. See [the development account](../../docs/building-jeva-with-jev.md) for how this process has already changed Jeva itself.
+
 | Local primitive | Question | Answer field |
 |---|---|---|
 | Choice | One of explicit unordered labels | `choice`, `probabilities` |

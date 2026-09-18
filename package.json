@@ -14,6 +14,12 @@
     "dev": "tsx src/cli.ts",
     "test": "npm run build && node --test dist",
     "check": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings --report-unused-disable-directives",
+    "lint:fix": "npm run lint -- --fix",
+    "lint:effect": "node scripts/check-effect.mjs",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "verify": "npm run format:check && npm run lint && npm run lint:effect && npm run check && npm test && npm run build:examples",
     "build:examples": "tsc -p tsconfig.examples.json",
     "jev:audit": "node scripts/workflow.mjs audit --live",
     "jev:decide": "node scripts/workflow.mjs decide --live",
@@ -29,7 +35,11 @@
     "tsx": "^4.23.13"
   },
   "devDependencies": {
+    "@effect/language-service": "0.87.2",
     "@types/node": "^22.20.3",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.83.0",
+    "oxlint-tsgolint": "7.0.2002",
     "typescript": "^5.9.3"
   }
 }
