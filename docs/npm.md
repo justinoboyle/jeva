@@ -1,7 +1,9 @@
-# Jeva npm usage: TypeSafe Jev in your terminal
+# Jeva installation and CLI usage: TypeSafe Jev in your terminal
+
+Jeva is not yet published to npm. Install from a repository checkout or a maintainer-provided tarball before running these examples.
 
 ```sh
-npx jeva -o yellow -o blue -i banana
+jeva -o yellow -o blue -i banana
 ```
 
 `jeva` runs TypeSafe's Jev decision model through Vercel AI Gateway. Use it when code needs a finite semantic answer: one category, a Boolean probability, or a score on an explicit rubric. It is a community CLI, not an official TypeSafe or Vercel package. It does not generate prose or retrieve facts from the web.
@@ -11,35 +13,52 @@ The command above requires the runtime and credentials below. Examples are runna
 Compose it with commands you already use:
 
 ```sh
-curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o jacket -o no-jacket
-curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o umbrella -o no-umbrella
+curl -fsS 'https://wttr.in/New+York?format=4' | jeva -o jacket -o no-jacket
+curl -fsS 'https://wttr.in/New+York?format=4' | jeva -o umbrella -o no-umbrella
 ```
 
 These simple choices demonstrate piping, not a reliable forecast. A short report may omit precipitation; add explicit criteria and an `unknown` label when evidence is incomplete, as in the [README weather example](../README.md). Enable `pipefail` in automation to preserve a failed upstream command's exit status.
 
 ## Installation
 
-Use Node.js 22 or newer:
+Use Node.js 22 or newer. With access to the private repository:
 
 ```sh
-npm install -g jeva
+git clone git@github.com:justinoboyle/jeva.git
+cd jeva
+npm ci
+npm run build
+npm link
 jeva --help
 ```
 
-For a one-off invocation without a global install:
+The linked command uses this checkout's build. Rebuild after source changes. Without a global link, run `node dist/cli.js --help` from the checkout.
+
+To create a standalone installable archive, run this in the checkout after `npm ci`:
 
 ```sh
-npx -y jeva --help
+npm pack
 ```
 
-For scripts with a project lockfile:
+`prepack` builds the CLI and its typed exports. Use the filename printed by `npm pack` (currently `jeva-0.0.1.tgz`) for a global installation:
 
 ```sh
-npm install jeva
-npx jeva --help
+npm install -g ./jeva-0.0.1.tgz
+jeva --help
 ```
 
-No API key is required for help. Model evaluations require your own gateway credentials and consume gateway usage. The development repository remains private; npm installation does not require GitHub access. Source examples and documentation included in the package can be read locally even when a registry page cannot resolve their relative links.
+Or install the archive into your own project with a lockfile:
+
+```sh
+npm install /absolute/path/to/jeva-0.0.1.tgz
+./node_modules/.bin/jeva --help
+```
+
+Keep the archive available at the recorded path for subsequent installs. Project scripts can invoke `jeva`, and TypeScript programs can import `jeva/program` and the other packaged exports.
+
+The local package and binary retain the name `jeva`, but this project cannot publish under that registry name. Do not use `npm install jeva` or `npx jeva`. `private: true` prevents npm publication while allowing local linking, packing, and tarball installation. A future registry release needs a publishable name and updated install instructions.
+
+No API key is required for help. Model evaluations require your own gateway credentials and consume gateway usage. Installation requires repository access or a tarball supplied by a maintainer. Source examples and documentation are included in the archive.
 
 ## Configuration and errors
 
@@ -169,6 +188,6 @@ Program modules execute as trusted JavaScript with normal Node privileges. Revie
 
 ## Package users and contributors
 
-The npm CLI is ready to run and does not need a local compiler for one-question calls or already-compiled programs. Installing it globally does not expose repository npm scripts in your current directory or install agent skills automatically.
+The packed CLI is ready to run and does not need a local compiler for one-question calls or already-compiled programs. Installing it globally does not expose repository npm scripts in your current directory or install agent skills automatically.
 
 The bundled `examples/`, `skills/`, and `docs/` provide design references. A contributor checkout with development dependencies supports `npm run build:examples`, `npm run demo:audit`, `npm run jev:audit -- --state task.json`, and the decision/search workflows documented in the README. Offline fixtures check orchestration; live results must be labeled separately. The [development account](building-jeva-with-jev.md) documents actual Jev-assisted improvements and their limits.

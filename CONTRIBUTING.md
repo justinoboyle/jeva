@@ -1,6 +1,6 @@
 # Contributing
 
-Use Node 22.12+ or a newer supported release for development. The published CLI requires Node 22+.
+Use Node 22.12+ or a newer supported release for development. The CLI requires Node 22+ and is not yet published to npm.
 
 ```sh
 npm ci
@@ -18,14 +18,17 @@ An `integration/<suite>` branch combines a related set of missions. Merge comple
 
 Retain useful mission branches until the release is verified. Do not force-push shared history. A local commit is not a remote push; a push is not a successful CI run; a packed tarball is not an npm publication.
 
-## Release checks
+## Local package checks and future publication
+
+The package is intentionally marked `private: true`: `jeva` remains its local package and binary name, but this project cannot publish under that npm registry name. Use checkout links or tarballs as described in the [installation guide](docs/npm.md#installation).
 
 1. Confirm the exact version in `package.json` and the lockfile.
-2. Run `npm run verify`, inspect `npm pack --dry-run`, and smoke-test the tarball from an isolated consumer directory.
-3. Confirm the exact main commit passed GitHub Actions.
-4. Publish with `npm publish --access public` using an authorized npm account. Do not bypass account security if npm requests 2FA.
-5. Confirm the registry version and test `npx -y jeva@<version> --help` outside the checkout. Tag the verified source commit only after publication is confirmed.
+2. Run `npm run verify` and inspect `npm pack --dry-run`.
+3. Run `npm run test:package` to pack and install the archive in an isolated consumer directory, check CLI help and exports, and execute offline fixtures.
+4. Use `npm pack` to create the installable tarball. This does not publish anything to npm.
 
-The GitHub repository is private; npm artifacts are public. Never include credentials, private task snapshots, or local execution reports in the package. Receipt and loop report files can expose result labels, state, and predictable hashes; store them privately and publish only intentionally authored, reviewed examples.
+Before a future registry release, choose an available name the maintainer can publish, update package metadata, the lockfile, import paths, smoke checks, and documentation, and explicitly remove the private flag. Confirm the exact release commit passed GitHub Actions before publishing through an authorized npm account.
+
+The GitHub repository is private. Never include credentials, private task snapshots, or local execution reports in a shared archive. Receipt and loop report files can expose result labels, state, and predictable hashes; store them privately and share only intentionally authored, reviewed examples.
 
 Live Jev evaluations are opt-in and consume gateway usage. CI uses offline evaluators. Keep fixtures and real provider observations separate, preserve failed or blocked attempts, and never present model confidence as a correctness proof.

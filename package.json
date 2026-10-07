@@ -1,6 +1,7 @@
 {
   "name": "jeva",
   "version": "0.0.1",
+  "private": true,
   "description": "Run TypeSafe Jev from the command line: structured decisions, JSON pipelines, and compiled async TypeScript workflows.",
   "keywords": [
     "jev",
@@ -12,7 +13,7 @@
     "effect",
     "ai-gateway"
   ],
-  "homepage": "https://www.npmjs.com/package/jeva",
+  "homepage": "https://github.com/justinoboyle/jeva",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/justinoboyle/jeva.git"

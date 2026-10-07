@@ -1,7 +1,9 @@
 # jeva — run TypeSafe Jev from the command line
 
+Jeva is not yet published to npm. The name `jeva` is a local package and command name, not an available registry install target. [Install from a checkout](#install-and-make-a-decision) before running these examples.
+
 ```sh
-npx jeva -o yellow -o blue -i banana
+jeva -o yellow -o blue -i banana
 ```
 
 `jeva` is a small, pipeline-safe CLI for TypeSafe’s Jev decision model through Vercel AI Gateway. It returns declared structured decisions—never generated prose—so shell scripts and TypeScript own control flow.
@@ -11,14 +13,14 @@ Use this TypeSafe Jev CLI for classification, evidence checks, Boolean judgments
 Pipe another command's output directly into a decision:
 
 ```sh
-curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o jacket -o no-jacket
-curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva -o umbrella -o no-umbrella
+curl -fsS 'https://wttr.in/New+York?format=4' | jeva -o jacket -o no-jacket
+curl -fsS 'https://wttr.in/New+York?format=4' | jeva -o umbrella -o no-umbrella
 ```
 
 Weather and model results vary. Two labels force a choice even when the weather snippet lacks useful details. When missing evidence matters, name the rule and allow an unknown result:
 
 ```sh
-curl -fsS 'https://wttr.in/New+York?format=4' | npx -y jeva --json \
+curl -fsS 'https://wttr.in/New+York?format=4' | jeva --json \
   -q 'Does `input` explicitly report rain or explicitly report dry conditions?' \
   -o umbrella -c 'umbrella=Rain is explicitly reported' \
   -o no-umbrella -c 'no-umbrella=Dry conditions are explicitly reported' \
@@ -31,16 +33,24 @@ This judges the supplied report, not future weather; temperature or wind alone d
 
 Requires Node.js 22 or newer and a Vercel AI Gateway API key for model calls. With credentials configured, the first command asks Jev to choose between `yellow` and `blue`. Examples below are recipes; recorded live observations are labeled in the [evaluation record](docs/skill-evaluation.md).
 
+With access to the repository, build and link the CLI locally:
+
 ```sh
-npm install -g jeva
+git clone git@github.com:justinoboyle/jeva.git
+cd jeva
+npm ci
+npm run build
+npm link
 jeva --help
 ```
 
-Or inspect the command without a global install:
+`npm link` exposes the built checkout as `jeva`; rerun `npm run build` after source changes. To run from the checkout without a global link:
 
 ```sh
-npx -y jeva --help
+node dist/cli.js --help
 ```
+
+For a standalone installation, build a tarball with `npm pack` and install that file; see the [installation guide](docs/npm.md#installation). Do not use `npm install -g jeva` or `npx jeva`: those resolve an npm registry name that this project cannot publish under. The package is marked `private` to prevent accidental publication until a publishable name is chosen.
 
 Help does not need credentials. Provide `AI_GATEWAY_API_KEY` through your environment or private configuration, then run:
 
@@ -58,7 +68,7 @@ Setup creates a key with the requested non-resetting budget and stores it in you
 
 Single-question JSON contains the decision at `.answers.answer`. Choice results include `choice` and, when available, `probabilities`. Model calls send the supplied input to the configured gateway and consume its usage budget. The package is a community CLI, not an official TypeSafe or Vercel release.
 
-See [configuration](#configuration), [one-liners](#one-liners), and the [npm usage guide](docs/npm.md) for stdin, files, gates, and compiled programs. The GitHub development repository is private; installing the npm package does not require repository access. Documentation, skill instructions, and examples are distributed with the package; relative source links refer to those files or a contributor checkout.
+See [configuration](#configuration), [one-liners](#one-liners), and the [CLI usage guide](docs/npm.md) for stdin, files, gates, and compiled programs. The GitHub development repository is private; installation requires repository access or a tarball supplied by a maintainer. Documentation, skill instructions, and examples are distributed with the package; relative source links refer to those files or a contributor checkout.
 
 ## One-liners
 
@@ -103,13 +113,13 @@ JEV_MODEL=typesafe-ai/jev
 
 `JEV_MODEL` is optional. On Unix, restrict the global config file to mode `600` and its directory to `700`; the CLI rejects a group/world-accessible global file. You can also use a project's `.env.local` or an explicit `DOTENV_CONFIG_PATH`. Precedence is environment > explicit dotenv path > local `.env.local` > local `.env` > global config. Keep credential files out of version control. Installing Jeva does not create a key or change shell startup files.
 
-Configure a suitable budget on the gateway key. A project budget alone does not cap arbitrary API-key calls. See the [npm guide](docs/npm.md#configuration-and-errors) for common setup failures.
+Configure a suitable budget on the gateway key. A project budget alone does not cap arbitrary API-key calls. See the [CLI guide](docs/npm.md#configuration-and-errors) for common setup failures.
 
 ## Documentation map
 
 | Start here                                                                         | What it covers                                                           |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| [npm and CLI guide](docs/npm.md)                                                   | Install, setup, stdin/files, JSON, gates, and standalone programs        |
+| [Installation and CLI guide](docs/npm.md)                                          | Install, setup, stdin/files, JSON, gates, and standalone programs        |
 | [Typed problem compilation](skills/jev-decision/references/problem-compilation.md) | Requirements, candidates, dependencies, and deterministic composition    |
 | [Current-work reasoning loop](skills/jev-decision/references/reasoning-loop.md)    | Supply actual task state, audit useful opportunities, act, and update    |
 | [Recursive spaces](skills/jev-decision/references/recursive-spaces.md)             | Bounded parallel frontiers and explicit unresolved obligations           |
@@ -242,7 +252,7 @@ The final projection is a candidate design or review outcome, with requirement o
 
 ## Agent skills
 
-The [skills](skills) contain reusable agent instructions for invoking Jeva and interpreting its results. An npm install includes the files but does not install them into your agent's skill directory. Contributors may link these canonical sources into `.agents/skills` or their personal skill directory. Names/descriptions match tasks, and detailed instructions load only when selected.
+The [skills](skills) contain reusable agent instructions for invoking Jeva and interpreting its results. A tarball install includes the files but does not install them into your agent's skill directory. Contributors may link these canonical sources into `.agents/skills` or their personal skill directory. Names/descriptions match tasks, and detailed instructions load only when selected.
 
 | Skill          | Useful agent task                                                                 |
 | -------------- | --------------------------------------------------------------------------------- |
@@ -264,14 +274,14 @@ For a real decision tree, write a normal TypeScript module with `defineProgram`.
 
 See [examples/fruit-decision.ts](examples/fruit-decision.ts). Compile templates under `examples/` with `npm run build:examples`, then run `jeva run dist/templates/examples/fruit-decision.js -i banana`. The runtime API is `runProgram(program, input, evaluate)` in [src/program.ts](src/program.ts); it is Effect-based and deliberately injectable, so graph behavior is testable without spending money.
 
-For an npm consumer's own project, install Jeva locally and follow the [standalone typed program recipe](docs/npm.md#typed-programs-in-your-project). `jeva run` loads a compiled JavaScript module with a default-exported program; it does not compile TypeScript or parse stdin JSON into an object automatically.
+For your own project, install Jeva locally from a tarball and follow the [standalone typed program recipe](docs/npm.md#typed-programs-in-your-project). `jeva run` loads a compiled JavaScript module with a default-exported program; it does not compile TypeScript or parse stdin JSON into an object automatically.
 
 ## Contributor setup
 
 Contributors with repository access can install development dependencies and link the built CLI:
 
 ```sh
-npm install
+npm ci
 npm run build
 npm link
 ```
